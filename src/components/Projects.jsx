@@ -1,91 +1,130 @@
+// Project data with details
 const projects = [
   {
+    number: '01',
     title: 'E-Commerce Platform',
     description: 'Full-stack e-commerce solution with payment integration, inventory management, and real-time order tracking.',
-    tags: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-    gradient: 'from-purple-500 to-blue-500',
+    tech: 'React · Node.js · MongoDB · Stripe',
+    year: '2024',
   },
   {
+    number: '02',
     title: 'AI Chat Application',
     description: 'Real-time chat application powered by AI with natural language processing and context awareness.',
-    tags: ['Next.js', 'Python', 'WebSocket', 'AI/ML'],
-    gradient: 'from-blue-500 to-cyan-500',
+    tech: 'Next.js · Python · WebSocket · AI/ML',
+    year: '2024',
   },
   {
+    number: '03',
     title: 'Task Management System',
     description: 'Collaborative project management tool with drag-and-drop boards, time tracking, and team analytics.',
-    tags: ['React', 'TypeScript', 'PostgreSQL', 'DnD'],
-    gradient: 'from-green-500 to-teal-500',
+    tech: 'React · TypeScript · PostgreSQL · DnD',
+    year: '2023',
   },
   {
+    number: '04',
     title: 'Social Media Dashboard',
     description: 'Analytics dashboard for social media management with scheduling, insights, and content calendar.',
-    tags: ['React', 'D3.js', 'API', 'Charts'],
-    gradient: 'from-orange-500 to-red-500',
+    tech: 'React · D3.js · REST API · Charts',
+    year: '2023',
   },
   {
+    number: '05',
     title: 'Fitness Tracker',
     description: 'Mobile-first fitness application with workout planning, progress tracking, and nutrition logging.',
-    tags: ['React Native', 'Firebase', 'Charts', 'Maps'],
-    gradient: 'from-pink-500 to-purple-500',
+    tech: 'React Native · Firebase · Charts · Maps',
+    year: '2023',
   },
   {
+    number: '06',
     title: 'Real Estate Platform',
     description: 'Property listing platform with advanced search, virtual tours, and mortgage calculator.',
-    tags: ['Next.js', 'Mapbox', 'Stripe', 'AWS'],
-    gradient: 'from-indigo-500 to-blue-500',
+    tech: 'Next.js · Mapbox · Stripe · AWS',
+    year: '2022',
   },
 ]
 
-function ProjectCard({ project, index }) {
+function ProjectRow({ project, onMouseEnter, onMouseLeave }) {
   return (
-    <div
-      className="group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-      style={{ animationDelay: `${index * 100}ms` }}
+    <a
+      href="#"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className="group block border-t border-neutral-200 dark:border-neutral-800 py-8 -mx-6 px-6 hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition-colors cursor-default"
     >
-      <div className={`h-48 bg-gradient-to-br ${project.gradient} p-6 flex items-center justify-center`}>
-        <div className="text-white text-center">
-          <div className="text-5xl mb-2">🚀</div>
-          <p className="text-sm opacity-80">Project Preview</p>
-        </div>
-      </div>
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+      <div className="flex items-start gap-6 lg:gap-12">
+        {/* Project number */}
+        <span className="text-xs tracking-widest text-neutral-400 font-mono-editorial pt-1 shrink-0">
+          {project.number}
+        </span>
+
+        {/* Project title */}
+        <h3 className="font-serif text-xl sm:text-2xl text-neutral-900 dark:text-neutral-100 group-hover:text-[#c4724e] transition-colors flex-1">
           {project.title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm leading-relaxed">
+
+        {/* Year */}
+        <span className="text-xs tracking-widest text-neutral-400 font-mono-editorial shrink-0 hidden sm:block">
+          {project.year}
+        </span>
+
+        {/* Arrow indicator */}
+        <span className="text-neutral-300 dark:text-neutral-700 group-hover:text-[#c4724e] transition-colors text-xl shrink-0 self-center">
+          →
+        </span>
+      </div>
+
+      {/* Hover reveal: description + tech stack */}
+      <div className="mt-6 ml-10 max-w-2xl">
+        <p className="text-neutral-500 dark:text-neutral-500 text-sm leading-relaxed mb-3">
           {project.description}
         </p>
-        <div className="flex flex-wrap gap-2">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-3 py-1 text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        <p className="text-[11px] tracking-widest uppercase text-neutral-400 font-mono-editorial">
+          {project.tech}
+        </p>
       </div>
-    </div>
+    </a>
   )
 }
 
 function Projects() {
+  // Track which project is being hovered for the reveal effect
+  const [hoveredIndex, setHoveredIndex] = useState(null)
+
   return (
-    <section id="projects" className="py-20 px-4">
+    <section id="projects" className="py-24 lg:py-32 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
-          Featured <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">Projects</span>
-        </h2>
-        <p className="text-center text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto">
-          A selection of my recent work showcasing web development, design, 
-          and problem-solving skills.
+        {/* Section label */}
+        <p className="text-xs tracking-widest uppercase text-neutral-400 font-mono-editorial mb-4">
+          03 — Selected Work
         </p>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {/* Section title */}
+        <h2 className="font-serif text-3xl sm:text-4xl text-neutral-900 dark:text-neutral-100 mb-16">
+          Recent Projects
+        </h2>
+
+        {/* Project list with hover reveals */}
+        <div className="max-w-4xl">
           {projects.map((project, index) => (
-            <ProjectCard key={project.title} project={project} index={index} />
+            <ProjectRow
+              key={project.title}
+              project={project}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            />
           ))}
+        </div>
+
+        {/* View all link */}
+        <div className="mt-12 ml-10">
+          <a
+            href="#"
+            className="inline-flex items-center gap-3 text-xs tracking-widest uppercase text-neutral-500 hover:text-[#c4724e] transition-colors font-mono-editorial"
+          >
+            View All Projects
+            <span>→</span>
+          </a>
         </div>
       </div>
     </section>

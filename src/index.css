@@ -5,7 +5,7 @@
 /* Global styles */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #8b5cf6 transparent;
+  scrollbar-color: #c4724e transparent;
 }
 
 body {
@@ -31,10 +31,19 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8b5cf6;
+  background: #c4724e;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: #a85e3f;
+}
+
+/* Editorial typography overrides */
+.font-serif {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.font-mono-editorial {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
 }

@@ -5,9 +5,9 @@ function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Roles to cycle through with the typing effect
   const roles = [
     'Full Stack Developer',
-    'UI/UX Designer',
     'Creative Coder',
     'Problem Solver',
   ]
@@ -20,6 +20,7 @@ function Hero() {
         if (!isDeleting) {
           setText(currentRole.substring(0, text.length + 1))
           if (text === currentRole) {
+            // Pause at full text before deleting
             setTimeout(() => setIsDeleting(true), 2000)
           }
         } else {
@@ -39,35 +40,44 @@ function Hero() {
   return (
     <section
       id="hero"
-      className="min-h-screen flex items-center justify-center px-4 pt-16"
+      className="min-h-screen flex items-center px-6 lg:px-8 pt-20"
     >
-      <div className="text-center max-w-4xl mx-auto">
-        <div className="mb-6">
-          <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl font-bold text-white mb-6 shadow-xl">
-            JD
-          </div>
-        </div>
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6">
-          Hi, I'm <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">John Doe</span>
+      <div className="max-w-6xl mx-auto w-full">
+        {/* Large serif heading */}
+        <h1 className="font-serif text-5xl sm:text-6xl lg:text-8xl text-neutral-900 dark:text-neutral-100 leading-[1.05] tracking-tight mb-8">
+          Crafting digital
+          <br />
+          experiences that
+          <br />
+          <span className="text-[#c4724e] italic">matter</span>
         </h1>
-        <div className="text-2xl sm:text-3xl text-gray-600 dark:text-gray-400 mb-8 h-10">
-          {text}
-          <span className="animate-pulse">|</span>
+
+        {/* Typing effect subtitle */}
+        <div className="h-8 mb-10">
+          <p className="text-sm tracking-widest uppercase text-neutral-400 font-mono-editorial">
+            {text}<span className="animate-pulse">|</span>
+          </p>
         </div>
-        <p className="text-lg text-gray-500 dark:text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          I create beautiful, functional web experiences that users love. 
-          Passionate about clean code, intuitive design, and pushing boundaries.
+
+        {/* Description */}
+        <p className="text-neutral-500 dark:text-neutral-500 max-w-xl leading-relaxed mb-12 text-[15px]">
+          I build thoughtful, functional web applications with attention to 
+          detail and a focus on the user experience. Based in the intersection 
+          of design and engineering.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+        {/* CTA buttons */}
+        <div className="flex flex-col sm:flex-row gap-6">
           <a
             href="#projects"
             onClick={(e) => {
               e.preventDefault()
               document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-[#c4724e] text-white text-xs tracking-widest uppercase font-mono-editorial hover:bg-[#a85e3f] transition-colors"
           >
-            View My Work
+            View Work
+            <span>→</span>
           </a>
           <a
             href="#contact"
@@ -75,7 +85,7 @@ function Hero() {
               e.preventDefault()
               document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="px-8 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300"
+            className="inline-flex items-center gap-3 px-6 py-3 border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-xs tracking-widest uppercase font-mono-editorial hover:border-neutral-800 dark:hover:border-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
           >
             Get In Touch
           </a>

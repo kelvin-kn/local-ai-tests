@@ -16,10 +16,9 @@ function Navbar({ darkMode, setDarkMode }) {
   }, [])
 
   const navLinks = [
-    { href: '#hero', label: 'Home' },
+    { href: '#hero', label: 'Work' },
     { href: '#about', label: 'About' },
     { href: '#skills', label: 'Skills' },
-    { href: '#projects', label: 'Projects' },
     { href: '#contact', label: 'Contact' },
   ]
 
@@ -31,26 +30,22 @@ function Navbar({ darkMode, setDarkMode }) {
     }
   }
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-  }
-
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg'
+          ? 'bg-[#faf9f6]/95 dark:bg-[#1a1a18]/95 backdrop-blur-sm'
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {!isRoot && (
             <Link
               to="/"
-              className="text-sm text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 mr-4"
+              className="text-xs tracking-widest uppercase text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
             >
-              ← Back
+              ← Launcher
             </Link>
           )}
           <a
@@ -59,12 +54,12 @@ function Navbar({ darkMode, setDarkMode }) {
               e.preventDefault()
               handleNavClick('#hero')
             }}
-            className="text-xl font-bold text-neutral-800 dark:text-white"
+            className="text-sm tracking-widest uppercase font-mono-editorial text-neutral-800 dark:text-neutral-200"
           >
-            Portfolio
+            JD
           </a>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -73,42 +68,42 @@ function Navbar({ darkMode, setDarkMode }) {
                   e.preventDefault()
                   handleNavClick(link.href)
                 }}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 font-medium"
+                className="text-xs tracking-widest uppercase text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors font-mono-editorial"
               >
                 {link.label}
               </a>
             ))}
             <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setDarkMode(!darkMode)}
+              className="w-8 h-8 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 rounded-full hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
               aria-label="Toggle dark mode"
             >
-              {darkMode ? '☀️' : '🌙'}
+              <span className="text-xs">{darkMode ? '☀' : '☾'}</span>
             </button>
           </div>
 
-          <div className="md:hidden flex items-center space-x-4">
+          <div className="md:hidden flex items-center gap-3">
             <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800"
+              onClick={() => setDarkMode(!darkMode)}
+              className="w-8 h-8 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 rounded-full"
               aria-label="Toggle dark mode"
             >
-              {darkMode ? '☀️' : '🌙'}
+              <span className="text-xs">{darkMode ? '☀' : '☾'}</span>
             </button>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800"
+              className="w-8 h-8 flex items-center justify-center border border-neutral-200 dark:border-neutral-700 rounded-full"
               aria-label="Toggle menu"
             >
-              {mobileOpen ? '✕' : '☰'}
+              <span className="text-xs">{mobileOpen ? '✕' : '☰'}</span>
             </button>
           </div>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg">
-          <div className="px-4 py-2 space-y-1">
+        <div className="md:hidden bg-[#faf9f6] dark:bg-[#1a1a18] border-t border-neutral-200 dark:border-neutral-800">
+          <div className="px-6 py-6 space-y-4">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -117,7 +112,7 @@ function Navbar({ darkMode, setDarkMode }) {
                   e.preventDefault()
                   handleNavClick(link.href)
                 }}
-                className="block py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="block text-xs tracking-widest uppercase text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors font-mono-editorial"
               >
                 {link.label}
               </a>

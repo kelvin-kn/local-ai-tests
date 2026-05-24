@@ -1,31 +1,46 @@
 import { useState, useEffect, useRef } from 'react'
 
+// Skill data with proficiency level (1-5 stars)
 const skills = [
-  { name: 'React / Next.js', level: 95 },
-  { name: 'JavaScript / TypeScript', level: 90 },
-  { name: 'Tailwind CSS', level: 92 },
-  { name: 'Node.js', level: 85 },
-  { name: 'Python', level: 80 },
-  { name: 'UI/UX Design', level: 88 },
-  { name: 'PostgreSQL / MongoDB', level: 82 },
-  { name: 'Git / DevOps', level: 87 },
+  { name: 'React', level: 5 },
+  { name: 'Next.js', level: 4 },
+  { name: 'TypeScript', level: 4 },
+  { name: 'Tailwind CSS', level: 5 },
+  { name: 'JavaScript', level: 5 },
+  { name: 'Node.js', level: 4 },
+  { name: 'Python', level: 4 },
+  { name: 'PostgreSQL', level: 4 },
+  { name: 'MongoDB', level: 3 },
+  { name: 'UI/UX Design', level: 4 },
+  { name: 'Git', level: 5 },
+  { name: 'Docker', level: 3 },
 ]
 
-function SkillBar({ skill, isVisible, index }) {
+function SkillItem({ skill, isVisible, index }) {
+  // Generate star dots based on proficiency level
+  const stars = Array.from({ length: 5 }, (_, i) => i < skill.level)
+
   return (
-    <div className="mb-4">
-      <div className="flex justify-between mb-2">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{skill.name}</span>
-        <span className="text-purple-600 font-semibold">{skill.level}%</span>
-      </div>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-purple-600 to-blue-500 rounded-full transition-all duration-1000 ease-out"
-          style={{
-            width: isVisible ? `${skill.level}%` : '0%',
-            transitionDelay: `${index * 100}ms`,
-          }}
-        ></div>
+    <div
+      className={`transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${index * 80}ms` }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm text-neutral-700 dark:text-neutral-300 font-mono-editorial">
+          {skill.name}
+        </span>
+        <div className="flex gap-1">
+          {stars.map((filled, i) => (
+            <span
+              key={i}
+              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                filled ? 'bg-[#c4724e]' : 'bg-neutral-200 dark:bg-neutral-700'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -35,6 +50,7 @@ function Skills() {
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef(null)
 
+  // Use IntersectionObserver to trigger animation when section scrolls into view
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -43,7 +59,7 @@ function Skills() {
           observer.unobserve(entry.target)
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.2 },
     )
 
     if (sectionRef.current) {
@@ -54,36 +70,32 @@ function Skills() {
   }, [])
 
   return (
-    <section id="skills" ref={sectionRef} className="py-20 px-4 bg-gray-50 dark:bg-gray-800/50">
+    <section
+      id="skills"
+      ref={sectionRef}
+      className="py-24 lg:py-32 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50"
+    >
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
-          My <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">Skills</span>
-        </h2>
-        <p className="text-center text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto">
-          A blend of technical expertise and creative problem-solving to deliver 
-          exceptional results.
+        {/* Section label */}
+        <p className="text-xs tracking-widest uppercase text-neutral-400 font-mono-editorial mb-4">
+          02 — Skills
         </p>
-        <div className="grid md:grid-cols-2 gap-12">
-          <div>
-            {skills.slice(0, 4).map((skill, index) => (
-              <SkillBar
-                key={skill.name}
-                skill={skill}
-                isVisible={isVisible}
-                index={index}
-              />
-            ))}
-          </div>
-          <div>
-            {skills.slice(4).map((skill, index) => (
-              <SkillBar
-                key={skill.name}
-                skill={skill}
-                isVisible={isVisible}
-                index={index + 4}
-              />
-            ))}
-          </div>
+
+        {/* Section title */}
+        <h2 className="font-serif text-3xl sm:text-4xl text-neutral-900 dark:text-neutral-100 mb-16">
+          Tools & Technologies
+        </h2>
+
+        {/* Two-column grid of skills */}
+        <div className="grid md:grid-cols-2 gap-x-16 gap-y-6 max-w-3xl">
+          {skills.map((skill, index) => (
+            <SkillItem
+              key={skill.name}
+              skill={skill}
+              isVisible={isVisible}
+              index={index}
+            />
+          ))}
         </div>
       </div>
     </section>
