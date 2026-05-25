@@ -77,6 +77,8 @@ function Launcher() {
             <Link
               key={project.name}
               to={project.path}
+              target="_blank"
+              rel="noopener noreferrer"
               className={`group relative block p-6 bg-neutral-900/50 border border-neutral-800 ${project.hoverColor} rounded-lg transition-all duration-300 hover:bg-neutral-900/80 hover:-translate-y-1`}
             >
               <div className="flex items-start justify-between mb-4">
