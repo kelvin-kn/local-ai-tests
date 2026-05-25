@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Launcher from './pages/Launcher'
 import Portfolio from './pages/Portfolio'
 import Quiz from './pages/Quiz'
+import Snake from './pages/Snake'
 
 // Coming soon page for unimplemented routes
 function ComingSoon() {
@@ -34,6 +35,7 @@ function App() {
       <Route path="/" element={<Launcher />} />
       <Route path="/portfolio" element={<Portfolio />} />
       <Route path="/quiz" element={<Quiz />} />
+      <Route path="/snake" element={<Snake />} />
       <Route path="*" element={<ComingSoon />} />
     </Routes>
   )
