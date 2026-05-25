@@ -17,12 +17,14 @@ function Portfolio() {
     return true
   })
 
-  // Apply dark class to document element for Tailwind dark mode
+  // Apply dark class and body background for Tailwind dark mode
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark')
+      document.body.style.backgroundColor = '#1a1a18'
     } else {
       document.documentElement.classList.remove('dark')
+      document.body.style.backgroundColor = '#faf9f6'
     }
     // Persist preference to localStorage
     localStorage.setItem('darkMode', String(darkMode))
