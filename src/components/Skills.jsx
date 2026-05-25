@@ -73,7 +73,7 @@ function Skills() {
     <section
       id="skills"
       ref={sectionRef}
-      className="py-24 lg:py-32 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50"
+      className="py-16 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50"
     >
       <div className="max-w-6xl mx-auto">
         {/* Section label */}

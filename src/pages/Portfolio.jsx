@@ -8,14 +8,14 @@ import Contact from '../components/Contact'
 import Footer from '../components/Footer'
 
 function Portfolio() {
-  // Track dark mode preference
-  const [darkMode, setDarkMode] = useState(false)
-
-  // Detect system preference on mount
-  useEffect(() => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    setDarkMode(prefersDark)
-  }, [])
+  // Initialize dark mode from localStorage or default to dark
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem('darkMode')
+    if (stored !== null) {
+      return stored === 'true'
+    }
+    return true
+  })
 
   // Apply dark class to document element for Tailwind dark mode
   useEffect(() => {
@@ -24,6 +24,8 @@ function Portfolio() {
     } else {
       document.documentElement.classList.remove('dark')
     }
+    // Persist preference to localStorage
+    localStorage.setItem('darkMode', String(darkMode))
   }, [darkMode])
 
   return (

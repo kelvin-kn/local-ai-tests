@@ -1,6 +1,6 @@
 function About() {
   return (
-    <section id="about" className="px-6 lg:px-8">
+    <section id="about" className="py-16 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <p className="text-xs tracking-widest uppercase text-neutral-400 font-mono-editorial mb-4">
@@ -8,7 +8,7 @@ function About() {
         </p>
 
         {/* Asymmetric two-column layout */}
-        <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
+        <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Left column - larger text */}
           <div className="lg:col-span-3">
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-neutral-900 dark:text-neutral-100 leading-tight mb-8">

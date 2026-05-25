@@ -53,7 +53,7 @@ function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24 lg:py-32 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50">
+    <section id="contact" className="py-16 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50">
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <p className="text-xs tracking-widest uppercase text-neutral-400 font-mono-editorial mb-4">

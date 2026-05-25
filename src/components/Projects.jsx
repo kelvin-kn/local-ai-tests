@@ -96,7 +96,7 @@ function Projects() {
   const [hoveredIndex, setHoveredIndex] = useState(null)
 
   return (
-    <section id="projects" className="py-24 lg:py-32 px-6 lg:px-8">
+    <section id="projects" className="py-16 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <p className="text-xs tracking-widest uppercase text-neutral-400 font-mono-editorial mb-4">
