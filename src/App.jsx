@@ -1,8 +1,10 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Launcher from './pages/Launcher'
 import Portfolio from './pages/Portfolio'
 import Quiz from './pages/Quiz'
 import Snake from './pages/Snake'
+import Weather from './pages/Weather'
 
 // Coming soon page for unimplemented routes
 function ComingSoon() {
@@ -30,12 +32,28 @@ function ComingSoon() {
 }
 
 function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    const titles = {
+      '/': 'Local AI Tests',
+      '/portfolio': 'Portfolio',
+      '/quiz': 'Trivia Quiz',
+      '/snake': 'Snake',
+      '/weather': 'Weather',
+      '/art': 'Art Gallery',
+      '/clock': 'Clock',
+    }
+    document.title = titles[location.pathname] || 'Local AI Tests'
+  }, [location])
+
   return (
     <Routes>
       <Route path="/" element={<Launcher />} />
       <Route path="/portfolio" element={<Portfolio />} />
       <Route path="/quiz" element={<Quiz />} />
       <Route path="/snake" element={<Snake />} />
+      <Route path="/weather" element={<Weather />} />
       <Route path="*" element={<ComingSoon />} />
     </Routes>
   )

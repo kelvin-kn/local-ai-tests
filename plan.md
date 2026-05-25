@@ -44,9 +44,9 @@ local-ai-tests/
 ## Build Order
 1. Setup — Tailwind config, routing, shared components ✅
 2. Project 1 — Portfolio ✅
-3. Project 2 — Quiz
-4. Project 3 — Snake
-5. Project 4 — Weather
+3. Project 2 — Quiz ✅
+4. Project 3 — Snake ✅
+5. Project 4 — Weather ✅
 6. Project 5 — Generative Art
 7. Bonus — Analog Clock
 8. Launcher page ✅
