@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Link } from 'react-router-dom'
 import { useEffect } from 'react'
 import Launcher from './pages/Launcher'
 import Portfolio from './pages/Portfolio'
@@ -6,6 +6,7 @@ import Quiz from './pages/Quiz'
 import Snake from './pages/Snake'
 import Weather from './pages/Weather'
 import ArtGallery from './pages/ArtGallery'
+import Clock from './pages/Clock'
 
 // Coming soon page for unimplemented routes
 function ComingSoon() {
@@ -21,12 +22,12 @@ function ComingSoon() {
         <p className="text-neutral-500 mb-8">
           This project is being built. Check back later.
         </p>
-        <a
+        <Link
           to="/"
           className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-[#c4724e] hover:text-[#a85e3f] transition-colors font-mono-editorial"
         >
           ← Back to Launcher
-        </a>
+        </Link>
       </div>
     </div>
   )
@@ -56,6 +57,7 @@ function App() {
       <Route path="/snake" element={<Snake />} />
       <Route path="/weather" element={<Weather />} />
       <Route path="/art" element={<ArtGallery />} />
+      <Route path="/clock" element={<Clock />} />
       <Route path="*" element={<ComingSoon />} />
     </Routes>
   )
