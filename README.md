@@ -17,7 +17,7 @@ This project tests how well a local AI model can:
 
 **Qwen 3.6 35B A3B**
 
-## Hardware
+## Test machine specifications
 
 - GPU: Nvidia P3200 (6GB VRAM)
 - RAM: 32GB
@@ -104,7 +104,7 @@ Deployed via Vercel. Connect the Vercel project to this GitHub repository for au
 
 ### Technical Specifications
 
-- **Model**: qwen/qwen3.6-35b-a3b (via LM Studio)
+- **Model**: [qwen/qwen3.6-35b-a3b](https://lmstudio.ai/models/qwen/qwen3.6-35b-a3b)
 - **Context Length**: 65,536 tokens
 - **Temperature**: 0.6
 - **Framework**: React + Vite + Tailwind CSS
@@ -112,15 +112,12 @@ Deployed via Vercel. Connect the Vercel project to this GitHub repository for au
 
 ### Hardware Constraints
 
-The hardware used fell short of the recommended specifications:
-
-- **Graphics Card**: Below recommended VRAM specs (Nvidia P3200 with 6GB VRAM)
-- **Memory**: 32GB RAM (insufficient for heavy workloads with model running)
+The hardware used fell short of the recommended specifications.
 
 Despite these limitations, the model was able to generate output, though at a slower pace:
 
-- Each project took roughly **1 hour** to generate
-- Bug fixes and adjustments took approximately **20-30 minutes** per session
+- Each project took roughly **1 - 2 hours** to generate
+- Bug fixes and adjustments took approximately **20-30 minutes** for each project.
 
 Due to the heavy memory requirements and hardware limitations, all other programs had to be terminated. Only the following were running during the session:
 
@@ -130,14 +127,9 @@ Due to the heavy memory requirements and hardware limitations, all other program
 
 The projects were mostly created in **one continuous session**.
 
-### Conclusion
+### Misc
 
-This model is good for coding tasks, but still requires:
-
-- Human in the loop / human guidance
-- Better hardware for maximum capacity and performance
-
-Still, it is a great tool for developers. The model mostly passed its evaluation, but would perform better with human guidance and references.
+- [**qwen/qwen3.6-27b](https://lmstudio.ai/models/qwen/qwen3.6-27b) could not run on the test machine. 
 
 ### Errors Encountered
 
@@ -186,6 +178,11 @@ Error rendering prompt with jinja template: "No user query found in messages."
 
 3. **Jinja Template Error** — Broken multi-step tool loop in long sessions (see fix above).
 
-### Final Verdict
 
-The model mostly passed its evaluation, but would perform better with human guidance and references. With proper configuration and adequate hardware, it is a powerful tool for developers.
+
+### Final Verdict and Conclusion
+This model mosty passed the evaluation and is good for coding tasks, but still requires:
+
+- Human in the loop / human guidance and references.
+
+- Better hardware for maximum capacity and performance.
