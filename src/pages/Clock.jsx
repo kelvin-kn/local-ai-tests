@@ -17,68 +17,87 @@ function rgbStr(c) {
   return `rgb(${c[0]},${c[1]},${c[2]})`
 }
 
-// --- Color palettes ---
+// --- Color palettes (deep space / cosmic theme) ---
 const palettes = {
-  'Amber Glow': {
-    bg: [15, 14, 12],
-    hands: [212, 165, 116],
-    accent: [232, 196, 154],
-    tick: [139, 105, 20],
-    ring: [40, 35, 30],
-    second: [200, 100, 20],
+  'Deep Space': {
+    bg: [8, 12, 24],
+    surface: [14, 20, 40],
+    hands: [100, 180, 255],
+    accent: [140, 220, 255],
+    tick: [50, 90, 140],
+    ring: [25, 40, 70],
+    second: [80, 200, 220],
+    glow: [100, 180, 255],
+    text: [180, 210, 240],
   },
-  'Ocean Depths': {
-    bg: [10, 22, 40],
-    hands: [74, 144, 184],
-    accent: [123, 192, 224],
-    tick: [30, 58, 95],
-    ring: [20, 35, 55],
-    second: [100, 180, 230],
+  'Aurora': {
+    bg: [6, 18, 14],
+    surface: [10, 30, 25],
+    hands: [80, 220, 160],
+    accent: [120, 255, 180],
+    tick: [40, 100, 80],
+    ring: [20, 50, 40],
+    second: [60, 210, 140],
+    glow: [80, 220, 160],
+    text: [160, 230, 200],
   },
-  'Forest Mist': {
-    bg: [15, 26, 15],
-    hands: [107, 158, 107],
-    accent: [143, 188, 143],
-    tick: [45, 124, 74],
-    ring: [25, 40, 25],
-    second: [80, 160, 80],
+  'Nebula': {
+    bg: [14, 8, 24],
+    surface: [20, 12, 38],
+    hands: [160, 120, 255],
+    accent: [200, 160, 255],
+    tick: [70, 40, 120],
+    ring: [35, 20, 60],
+    second: [180, 100, 240],
+    glow: [160, 120, 255],
+    text: [200, 180, 240],
   },
-  'Ember Night': {
-    bg: [26, 10, 10],
-    hands: [205, 55, 0],
-    accent: [255, 158, 0],
-    tick: [139, 37, 0],
-    ring: [40, 20, 15],
-    second: [255, 100, 20],
+  'Polar Night': {
+    bg: [10, 10, 14],
+    surface: [18, 18, 24],
+    hands: [180, 190, 210],
+    accent: [210, 220, 240],
+    tick: [60, 65, 80],
+    ring: [30, 32, 45],
+    second: [160, 170, 200],
+    glow: [180, 190, 210],
+    text: [200, 210, 230],
   },
-  'Lavender Dusk': {
-    bg: [26, 16, 40],
-    hands: [139, 112, 176],
-    accent: [168, 144, 208],
-    tick: [74, 48, 96],
-    ring: [35, 25, 50],
-    second: [180, 120, 220],
+  'Crimson Void': {
+    bg: [18, 6, 8],
+    surface: [28, 10, 14],
+    hands: [255, 100, 80],
+    accent: [255, 140, 110],
+    tick: [120, 30, 25],
+    ring: [50, 15, 20],
+    second: [255, 80, 60],
+    glow: [255, 100, 80],
+    text: [240, 180, 170],
   },
-  'Monochrome': {
-    bg: [15, 15, 15],
-    hands: [170, 170, 170],
-    accent: [200, 200, 200],
-    tick: [60, 60, 60],
-    ring: [30, 30, 30],
-    second: [220, 220, 220],
+  'Glacier': {
+    bg: [8, 14, 20],
+    surface: [12, 22, 32],
+    hands: [140, 200, 230],
+    accent: [180, 230, 255],
+    tick: [50, 90, 120],
+    ring: [25, 45, 65],
+    second: [100, 180, 220],
+    glow: [140, 200, 230],
+    text: [190, 220, 240],
   },
 }
 
 // --- Analog Clock Component ---
 function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers = true }) {
   const canvasRef = useRef(null)
-  const animRef = useRef(null)
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000)
+    const interval = setInterval(() => setTime(new Date()), 50)
     return () => clearInterval(interval)
   }, [])
+
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -90,30 +109,34 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
     const cy = canvasH / 2
     const radius = Math.min(w, canvasH) / 2 - 20
 
-    const pal = palettes[paletteName] || palettes['Amber Glow']
-
-    // Background
+    // Background with subtle glow
     const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius + 20)
-    bgGrad.addColorStop(0, rgbStr(lerpColor(pal.bg, [30, 28, 25], 0.3)))
+    bgGrad.addColorStop(0, rgbStr(lerpColor(pal.surface, pal.glow, 0.05)))
     bgGrad.addColorStop(1, rgbStr(pal.bg))
     ctx.fillStyle = bgGrad
-    ctx.fillRect(0, 0, w, h)
+    ctx.fillRect(0, 0, w, canvasH)
 
-    // Outer ring
+    // Outer ring with glow
+    ctx.shadowColor = rgbStr(pal.glow)
+    ctx.shadowBlur = 15
     ctx.beginPath()
     ctx.arc(cx, cy, radius + 8, 0, Math.PI * 2)
     ctx.strokeStyle = rgbStr(pal.ring)
     ctx.lineWidth = 2
     ctx.stroke()
+    ctx.shadowBlur = 0
 
     // Clock face
     ctx.beginPath()
     ctx.arc(cx, cy, radius, 0, Math.PI * 2)
     const faceGrad = ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, 0, cx, cy, radius)
-    faceGrad.addColorStop(0, rgbStr(lerpColor(pal.bg, [50, 45, 40], 0.4)))
-    faceGrad.addColorStop(1, rgbStr(pal.bg))
+    faceGrad.addColorStop(0, rgbStr(lerpColor(pal.surface, pal.glow, 0.08)))
+    faceGrad.addColorStop(1, rgbStr(pal.surface))
     ctx.fillStyle = faceGrad
     ctx.fill()
+    ctx.strokeStyle = rgbStr(pal.ring)
+    ctx.lineWidth = 1.5
+    ctx.stroke()
 
     // Hour markers and numbers
     for (let i = 0; i < 12; i++) {
@@ -133,6 +156,7 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
       ctx.lineTo(x2, y2)
       ctx.strokeStyle = rgbStr(isMain ? pal.accent : pal.tick)
       ctx.lineWidth = isMain ? 3 : 1.5
+      ctx.lineCap = 'round'
       ctx.stroke()
 
       // Numbers
@@ -140,11 +164,14 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
         const numR = radius * 0.72
         const nx = cx + Math.cos(angle) * numR
         const ny = cy + Math.sin(angle) * numR
+        ctx.shadowColor = rgbStr(pal.glow)
+        ctx.shadowBlur = isMain ? 8 : 0
         ctx.fillStyle = rgbStr(isMain ? pal.accent : pal.tick)
-        ctx.font = `${isMain ? 28 : 20}px Georgia, serif`
+        ctx.font = `bold ${isMain ? 32 : 22}px system-ui, -apple-system, sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(i === 0 ? '12' : i.toString(), nx, ny)
+        ctx.shadowBlur = 0
       }
     }
 
@@ -162,38 +189,41 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
       ctx.beginPath()
       ctx.moveTo(x1, y1)
       ctx.lineTo(x2, y2)
-      ctx.strokeStyle = rgbStr(lerpColor(pal.tick, pal.bg, 0.5))
+      ctx.strokeStyle = rgbStr(lerpColor(pal.tick, pal.surface, 0.5))
       ctx.lineWidth = 0.5
       ctx.stroke()
     }
 
     // Get time values
-    const h = time.getHours() % 12
+    const hours = time.getHours() % 12
     const m = time.getMinutes()
     const s = time.getSeconds()
     const ms = time.getMilliseconds()
 
     const smoothS = s + ms / 1000
     const smoothM = m + smoothS / 60
-    const smoothH = h + smoothM / 60
+    const smoothH = hours + smoothM / 60
 
     // Hour hand
     const hAngle = (smoothH / 12) * Math.PI * 2 - Math.PI / 2
     const hLen = radius * 0.5
     const hWidth = 6
-    drawHand(ctx, cx, cy, hAngle, hLen, hWidth, rgbStr(pal.hands))
+    drawHand(ctx, cx, cy, hAngle, hLen, hWidth, rgbStr(pal.hands), 12)
 
     // Minute hand
     const mAngle = (smoothM / 60) * Math.PI * 2 - Math.PI / 2
     const mLen = radius * 0.72
     const mWidth = 4
-    drawHand(ctx, cx, cy, mAngle, mLen, mWidth, rgbStr(pal.hands))
+    drawHand(ctx, cx, cy, mAngle, mLen, mWidth, rgbStr(pal.hands), 8)
 
     // Second hand
     if (showSeconds) {
       const sAngle = (smoothS / 60) * Math.PI * 2 - Math.PI / 2
       const sLen = radius * 0.85
       const sTail = radius * 0.15
+
+      ctx.shadowColor = rgbStr(pal.second)
+      ctx.shadowBlur = 10
 
       // Tail
       ctx.beginPath()
@@ -207,6 +237,7 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
       )
       ctx.strokeStyle = rgbStr(pal.second)
       ctx.lineWidth = 1.5
+      ctx.lineCap = 'round'
       ctx.stroke()
 
       // Main
@@ -220,12 +251,15 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
         cy + Math.sin(sAngle) * sLen
       )
       ctx.strokeStyle = rgbStr(pal.second)
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 2
+      ctx.lineCap = 'round'
       ctx.stroke()
+
+      ctx.shadowBlur = 0
 
       // Center dot
       ctx.beginPath()
-      ctx.arc(cx, cy, 5, 0, Math.PI * 2)
+      ctx.arc(cx, cy, 6, 0, Math.PI * 2)
       ctx.fillStyle = rgbStr(pal.second)
       ctx.fill()
     }
@@ -237,7 +271,7 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
     ctx.fill()
     ctx.beginPath()
     ctx.arc(cx, cy, 4, 0, Math.PI * 2)
-    ctx.fillStyle = rgbStr(pal.bg)
+    ctx.fillStyle = rgbStr(pal.surface)
     ctx.fill()
   }, [time, paletteName, showSeconds, showNumbers])
 
@@ -256,15 +290,19 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
       ref={canvasRef}
       width={size}
       height={size}
-      className="rounded-full shadow-2xl"
+      className="rounded-full"
+      style={{ filter: `drop-shadow(0 0 30px ${rgbStr(pal.glow)}33)` }}
     />
   )
 }
 
-function drawHand(ctx, cx, cy, angle, length, width, color) {
+function drawHand(ctx, cx, cy, angle, length, width, color, glowBlur) {
   const x = cx + Math.cos(angle) * length
   const y = cy + Math.sin(angle) * length
   const perpAngle = angle + Math.PI / 2
+
+  ctx.shadowColor = color
+  ctx.shadowBlur = glowBlur || 8
 
   ctx.beginPath()
   ctx.moveTo(
@@ -279,23 +317,35 @@ function drawHand(ctx, cx, cy, angle, length, width, color) {
   ctx.closePath()
   ctx.fillStyle = color
   ctx.fill()
+
+  ctx.shadowBlur = 0
 }
 
 // --- Digital Clock Component ---
-function DigitalClock({ paletteName, size = 400 }) {
+function DigitalClock({ paletteName, use24Hour }) {
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000)
+    const interval = setInterval(() => setTime(new Date()), 100)
     return () => clearInterval(interval)
   }, [])
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
-  const hours = time.getHours().toString().padStart(2, '0')
-  const minutes = time.getMinutes().toString().padStart(2, '0')
-  const seconds = time.getSeconds().toString().padStart(2, '0')
-  const ampm = time.getHours() >= 12 ? 'PM' : 'AM'
+  let displayH, displayM, displayS, ampmStr
+  if (use24Hour) {
+    displayH = time.getHours().toString().padStart(2, '0')
+    displayM = time.getMinutes().toString().padStart(2, '0')
+    displayS = time.getSeconds().toString().padStart(2, '0')
+    ampmStr = ''
+  } else {
+    const h = time.getHours()
+    displayH = (h % 12 || 12).toString().padStart(2, '0')
+    displayM = time.getMinutes().toString().padStart(2, '0')
+    displayS = time.getSeconds().toString().padStart(2, '0')
+    ampmStr = h >= 12 ? 'PM' : 'AM'
+  }
+
   const dateStr = time.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -303,195 +353,121 @@ function DigitalClock({ paletteName, size = 400 }) {
     day: 'numeric',
   })
 
-  const digitWidth = size * 0.12
-  const digitHeight = size * 0.22
-  const gap = size * 0.02
-
   return (
-    <div
-      className="flex flex-col items-center justify-center"
-      style={{ width: size, height: size }}
-    >
+    <div className="flex flex-col items-center justify-center">
       {/* Date */}
       <p
-        className="mb-8 text-center"
+        className="mb-6 text-center"
         style={{
           color: rgbStr(pal.tick),
-          fontSize: size * 0.035,
-          fontFamily: 'Georgia, serif',
-          letterSpacing: '0.15em',
+          fontSize: '1.1rem',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          letterSpacing: '0.2em',
+          textTransform: 'uppercase',
         }}
       >
         {dateStr}
       </p>
 
       {/* Time display */}
-      <div className="flex items-center">
+      <div
+        className="flex items-center"
+        style={{
+          fontFamily: "'DS-DIGII', monospace",
+        }}
+      >
         {/* Hours */}
-        <div className="flex">
-          {hours.split('').map((d, i) => (
-            <div
-              key={`h-${i}`}
-              className="flex items-center justify-center"
-              style={{ width: digitWidth, height: digitHeight }}
-            >
-              <SevenSegmentDigit value={d} color={pal.hands} size={digitWidth} />
-            </div>
-          ))}
-        </div>
+        <span
+          className="inline-block"
+          style={{
+            fontSize: '8rem',
+            lineHeight: 1,
+            color: rgbStr(pal.accent),
+            textShadow: `0 0 20px ${rgbStr(pal.glow)}, 0 0 40px ${rgbStr(pal.glow)}66`,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {displayH}
+        </span>
 
         {/* Colon */}
-        <div
-          className="flex flex-col items-center justify-center mx-1"
-          style={{ height: digitHeight }}
+        <span
+          className="inline-block mx-1"
+          style={{
+            fontSize: '8rem',
+            lineHeight: 1,
+            color: rgbStr(pal.accent),
+            textShadow: `0 0 20px ${rgbStr(pal.glow)}`,
+            animation: 'blink 1s step-end infinite',
+          }}
         >
-          <div
-            className="rounded-full animate-pulse"
-            style={{
-              width: size * 0.02,
-              height: size * 0.02,
-              backgroundColor: rgbStr(pal.accent),
-              marginBottom: size * 0.06,
-            }}
-          />
-          <div
-            className="rounded-full animate-pulse"
-            style={{
-              width: size * 0.02,
-              height: size * 0.02,
-              backgroundColor: rgbStr(pal.accent),
-              marginTop: size * 0.06,
-            }}
-          />
-        </div>
+          :
+        </span>
 
         {/* Minutes */}
-        <div className="flex">
-          {minutes.split('').map((d, i) => (
-            <div
-              key={`m-${i}`}
-              className="flex items-center justify-center"
-              style={{ width: digitWidth, height: digitHeight }}
-            >
-              <SevenSegmentDigit value={d} color={pal.hands} size={digitWidth} />
-            </div>
-          ))}
-        </div>
+        <span
+          className="inline-block"
+          style={{
+            fontSize: '8rem',
+            lineHeight: 1,
+            color: rgbStr(pal.accent),
+            textShadow: `0 0 20px ${rgbStr(pal.glow)}, 0 0 40px ${rgbStr(pal.glow)}66`,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {displayM}
+        </span>
 
         {/* Colon */}
-        <div
-          className="flex flex-col items-center justify-center mx-1"
-          style={{ height: digitHeight }}
+        <span
+          className="inline-block mx-1"
+          style={{
+            fontSize: '8rem',
+            lineHeight: 1,
+            color: rgbStr(pal.accent),
+            textShadow: `0 0 20px ${rgbStr(pal.glow)}`,
+            animation: 'blink 1s step-end infinite',
+          }}
         >
-          <div
-            className="rounded-full animate-pulse"
-            style={{
-              width: size * 0.02,
-              height: size * 0.02,
-              backgroundColor: rgbStr(pal.accent),
-              marginBottom: size * 0.06,
-            }}
-          />
-          <div
-            className="rounded-full animate-pulse"
-            style={{
-              width: size * 0.02,
-              height: size * 0.02,
-              backgroundColor: rgbStr(pal.accent),
-              marginTop: size * 0.06,
-            }}
-          />
-        </div>
+          :
+        </span>
 
         {/* Seconds */}
-        <div className="flex">
-          {seconds.split('').map((d, i) => (
-            <div
-              key={`s-${i}`}
-              className="flex items-center justify-center"
-              style={{ width: digitWidth * 0.8, height: digitHeight }}
-            >
-              <SevenSegmentDigit value={d} color={pal.second} size={digitWidth * 0.8} />
-            </div>
-          ))}
-        </div>
+        <span
+          className="inline-block"
+          style={{
+            fontSize: '8rem',
+            lineHeight: 1,
+            color: rgbStr(pal.second),
+            textShadow: `0 0 20px ${rgbStr(pal.second)}, 0 0 40px ${rgbStr(pal.second)}66`,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {displayS}
+        </span>
 
         {/* AM/PM */}
-        <div
-          className="flex items-center ml-4"
-          style={{ fontSize: size * 0.05 }}
-        >
-          <span style={{ color: rgbStr(pal.accent), fontFamily: 'Georgia, serif' }}>
-            {ampm}
+        {ampmStr && (
+          <span
+            className="inline-block ml-4 self-end mb-2"
+            style={{
+              fontSize: '2rem',
+              color: rgbStr(pal.accent),
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontWeight: '600',
+              textShadow: `0 0 10px ${rgbStr(pal.glow)}`,
+            }}
+          >
+            {ampmStr}
           </span>
-        </div>
+        )}
       </div>
     </div>
   )
 }
 
-// --- Seven Segment Display ---
-function SevenSegmentDigit({ value, color, size }) {
-  const w = size
-  const h = size * 1.8
-  const segW = w * 0.2
-  const segH = h * 0.08
-  const gap = w * 0.15
-
-  const segments = {
-    '0': [1, 1, 1, 1, 1, 1, 0],
-    '1': [0, 1, 1, 0, 0, 0, 0],
-    '2': [1, 1, 0, 1, 1, 0, 1],
-    '3': [1, 1, 1, 1, 0, 0, 1],
-    '4': [0, 1, 1, 0, 0, 1, 1],
-    '5': [1, 0, 1, 1, 0, 1, 1],
-    '6': [1, 0, 1, 1, 1, 1, 1],
-    '7': [1, 1, 1, 0, 0, 0, 0],
-    '8': [1, 1, 1, 1, 1, 1, 1],
-    '9': [1, 1, 1, 1, 0, 1, 1],
-    '-': [0, 0, 0, 0, 0, 0, 1],
-    ' ': [0, 0, 0, 0, 0, 0, 0],
-  }
-
-  const active = segments[value] || segments[' ']
-
-  const segs = [
-    // Top
-    { x: gap, y: 0, w: w - gap * 2, h: segH },
-    // Top-left
-    { x: 0, y: segH, w: segW, h: h * 0.3 - segH },
-    // Top-right
-    { x: w - segW, y: segH, w: segW, h: h * 0.3 - segH },
-    // Middle
-    { x: gap, y: h * 0.35, w: w - gap * 2, h: segH },
-    // Bottom-left
-    { x: 0, y: h * 0.65, w: segW, h: h * 0.3 - segH * 2 },
-    // Bottom-right
-    { x: w - segW, y: h * 0.65, w: segW, h: h * 0.3 - segH * 2 },
-    // Bottom
-    { x: gap, y: h - segH, w: w - gap * 2, h: segH },
-  ]
-
-  return (
-    <svg width={w} height={h} className="overflow-visible">
-      {segs.map((seg, i) => (
-        <rect
-          key={i}
-          x={seg.x}
-          y={seg.y}
-          width={seg.w}
-          height={seg.h}
-          rx={seg.h / 2}
-          fill={active[i] ? rgbStr(color) : 'transparent'}
-          opacity={active[i] ? 0.9 : 0.05}
-        />
-      ))}
-    </svg>
-  )
-}
-
 // --- World Clock Component ---
-function WorldClock({ paletteName, size = 400 }) {
+function WorldClock({ paletteName, use24Hour }) {
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -500,20 +476,18 @@ function WorldClock({ paletteName, size = 400 }) {
   }, [])
 
   const cities = [
-    { name: 'New York', tz: 'America/New_York', offset: -5 },
-    { name: 'London', tz: 'Europe/London', offset: 0 },
-    { name: 'Tokyo', tz: 'Asia/Tokyo', offset: 9 },
-    { name: 'Sydney', tz: 'Australia/Sydney', offset: 11 },
+    { name: 'New York', tz: 'America/New_York' },
+    { name: 'London', tz: 'Europe/London' },
+    { name: 'Nairobi', tz: 'Africa/Nairobi' },
+    { name: 'Tokyo', tz: 'Asia/Tokyo' },
+    { name: 'Sydney', tz: 'Australia/Sydney' },
   ]
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   return (
-    <div
-      className="flex flex-col items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <div className="grid grid-cols-2 gap-8 w-full px-8">
+    <div className="flex flex-col items-center">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-16 w-full max-w-5xl px-8">
         {cities.map(city => {
           const cityTime = new Date(time.toLocaleString('en-US', { timeZone: city.tz }))
           const h = cityTime.getHours()
@@ -532,14 +506,15 @@ function WorldClock({ paletteName, size = 400 }) {
                 second={s}
                 isNight={isNight}
                 pal={pal}
-                radius={size * 0.12}
+                radius={80}
               />
               <p
                 className="mt-3"
                 style={{
                   color: isNight ? rgbStr(lerpColor(pal.tick, [10, 10, 30], 0.5)) : rgbStr(pal.accent),
-                  fontSize: size * 0.035,
-                  fontFamily: 'Georgia, serif',
+                  fontSize: '1.1rem',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  letterSpacing: '0.1em',
                 }}
               >
                 {city.name}
@@ -548,10 +523,14 @@ function WorldClock({ paletteName, size = 400 }) {
                 className="font-mono"
                 style={{
                   color: isNight ? rgbStr(lerpColor(pal.hands, [10, 10, 30], 0.3)) : rgbStr(pal.hands),
-                  fontSize: size * 0.04,
+                  fontSize: '1.4rem',
+                  fontWeight: '600',
+                  textShadow: `0 0 8px ${rgbStr(pal.glow)}44`,
                 }}
               >
-                {displayH.toString().padStart(2, '0')}:{m.toString().padStart(2, '0')} {ampm}
+                {use24Hour
+                  ? `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+                  : `${displayH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`}
               </p>
             </div>
           )
@@ -578,7 +557,7 @@ function MiniAnalogClock({ hour, minute, second, isNight, pal, radius }) {
     // Face
     ctx.beginPath()
     ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-    ctx.fillStyle = isNight ? 'rgba(10,10,30,0.5)' : rgbStr(lerpColor(pal.bg, [40, 35, 30], 0.3))
+    ctx.fillStyle = isNight ? 'rgba(10,10,30,0.5)' : rgbStr(lerpColor(pal.surface, [40, 35, 30], 0.3))
     ctx.fill()
     ctx.strokeStyle = rgbStr(pal.ring)
     ctx.lineWidth = 1
@@ -592,8 +571,9 @@ function MiniAnalogClock({ hour, minute, second, isNight, pal, radius }) {
       ctx.beginPath()
       ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner)
       ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer)
-      ctx.strokeStyle = rgbStr(i % 3 === 0 ? pal.tick : lerpColor(pal.tick, pal.bg, 0.5))
+      ctx.strokeStyle = rgbStr(i % 3 === 0 ? pal.tick : lerpColor(pal.tick, pal.surface, 0.5))
       ctx.lineWidth = i % 3 === 0 ? 1.5 : 0.5
+      ctx.lineCap = 'round'
       ctx.stroke()
     }
 
@@ -642,7 +622,7 @@ function Stopwatch({ paletteName }) {
   const startTimeRef = useRef(0)
   const intervalRef = useRef(null)
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   useEffect(() => {
     if (running) {
@@ -680,6 +660,7 @@ function Stopwatch({ paletteName }) {
           fontSize: '4rem',
           color: rgbStr(pal.hands),
           letterSpacing: '0.05em',
+          textShadow: `0 0 20px ${rgbStr(pal.glow)}66`,
         }}
       >
         {formatTime(elapsed)}
@@ -693,7 +674,7 @@ function Stopwatch({ paletteName }) {
             cy={140}
             r={130}
             fill="none"
-            stroke={rgbStr(lerpColor(pal.ring, pal.bg, 0.5))}
+            stroke={rgbStr(lerpColor(pal.ring, pal.surface, 0.5))}
             strokeWidth={4}
           />
           <circle
@@ -706,7 +687,7 @@ function Stopwatch({ paletteName }) {
             strokeDasharray={`${2 * Math.PI * 130}`}
             strokeDashoffset={`${2 * Math.PI * 130 * (1 - (elapsed % 60000) / 60000)}`}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+            style={{ transition: 'stroke-dashoffset 0.1s linear', filter: `drop-shadow(0 0 6px ${rgbStr(pal.glow)})` }}
           />
         </svg>
         <div
@@ -714,7 +695,9 @@ function Stopwatch({ paletteName }) {
           style={{
             fontSize: '2.5rem',
             color: rgbStr(pal.accent),
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontWeight: '600',
+            textShadow: `0 0 10px ${rgbStr(pal.glow)}44`,
           }}
         >
           {formatTimeLong(elapsed)}
@@ -727,9 +710,9 @@ function Stopwatch({ paletteName }) {
           onClick={() => setRunning(!running)}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: running ? rgbStr(lerpColor(pal.second, [40, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [20, 20, 20], 0.4)),
+            backgroundColor: running ? rgbStr(lerpColor(pal.second, [20, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [10, 10, 20], 0.4)),
             color: running ? rgbStr(pal.second) : rgbStr(pal.accent),
-            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [60, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [60, 50, 40], 0.3))}`,
+            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [40, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [30, 30, 50], 0.3))}`,
           }}
         >
           {running ? 'Pause' : 'Start'}
@@ -743,9 +726,9 @@ function Stopwatch({ paletteName }) {
           disabled={!running && elapsed === 0}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors disabled:opacity-30"
           style={{
-            backgroundColor: rgbStr(lerpColor(pal.tick, [20, 20, 20], 0.3)),
+            backgroundColor: rgbStr(lerpColor(pal.tick, [10, 10, 20], 0.3)),
             color: rgbStr(pal.tick),
-            border: `1px solid ${rgbStr(lerpColor(pal.tick, [40, 40, 40], 0.3))}`,
+            border: `1px solid ${rgbStr(lerpColor(pal.tick, [30, 30, 50], 0.3))}`,
           }}
         >
           Lap
@@ -754,9 +737,9 @@ function Stopwatch({ paletteName }) {
           onClick={() => { setRunning(false); setElapsed(0); setLaps([]) }}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: rgbStr(lerpColor(pal.ring, [20, 20, 20], 0.3)),
+            backgroundColor: rgbStr(lerpColor(pal.ring, [10, 10, 20], 0.3)),
             color: rgbStr(pal.tick),
-            border: `1px solid ${rgbStr(lerpColor(pal.ring, [40, 40, 40], 0.3))}`,
+            border: `1px solid ${rgbStr(lerpColor(pal.ring, [30, 30, 50], 0.3))}`,
           }}
         >
           Reset
@@ -774,8 +757,8 @@ function Stopwatch({ paletteName }) {
               key={i}
               className="flex justify-between py-2 px-4 border-b"
               style={{
-                borderColor: rgbStr(lerpColor(pal.ring, [30, 30, 30], 0.3)),
-                color: rgbStr(lerpColor(pal.tick, [40, 40, 40], 0.5)),
+                borderColor: rgbStr(lerpColor(pal.ring, [20, 20, 40], 0.3)),
+                color: rgbStr(lerpColor(pal.tick, [30, 30, 50], 0.5)),
                 fontFamily: 'monospace',
               }}
             >
@@ -797,7 +780,7 @@ function Timer({ paletteName }) {
   const [finished, setFinished] = useState(false)
   const intervalRef = useRef(null)
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   useEffect(() => {
     if (running && remaining > 0) {
@@ -834,7 +817,7 @@ function Timer({ paletteName }) {
             cy={140}
             r={130}
             fill="none"
-            stroke={rgbStr(lerpColor(pal.ring, pal.bg, 0.5))}
+            stroke={rgbStr(lerpColor(pal.ring, pal.surface, 0.5))}
             strokeWidth={4}
           />
           <circle
@@ -847,7 +830,7 @@ function Timer({ paletteName }) {
             strokeDasharray={`${2 * Math.PI * 130}`}
             strokeDashoffset={`${2 * Math.PI * 130 * (1 - progress)}`}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear' }}
+            style={{ transition: 'stroke-dashoffset 1s linear', filter: finished ? `drop-shadow(0 0 10px ${rgbStr(pal.glow)})` : 'none' }}
           />
         </svg>
         <div
@@ -859,6 +842,7 @@ function Timer({ paletteName }) {
               fontSize: '3.5rem',
               color: finished ? rgbStr(pal.second) : rgbStr(pal.hands),
               fontFamily: 'monospace',
+              textShadow: `0 0 15px ${rgbStr(pal.glow)}66`,
             }}
           >
             {formatTime(remaining)}
@@ -889,9 +873,9 @@ function Timer({ paletteName }) {
                 duration === dur ? 'font-semibold' : ''
               }`}
               style={{
-                backgroundColor: duration === dur ? rgbStr(lerpColor(pal.hands, [20, 20, 20], 0.4)) : rgbStr(lerpColor(pal.ring, [20, 20, 20], 0.3)),
+                backgroundColor: duration === dur ? rgbStr(lerpColor(pal.hands, [10, 10, 20], 0.4)) : rgbStr(lerpColor(pal.ring, [10, 10, 20], 0.3)),
                 color: duration === dur ? rgbStr(pal.accent) : rgbStr(pal.tick),
-                border: `1px solid ${rgbStr(lerpColor(pal.ring, [40, 40, 40], 0.3))}`,
+                border: `1px solid ${rgbStr(lerpColor(pal.ring, [30, 30, 50], 0.3))}`,
               }}
             >
               {dur >= 60 ? `${dur / 60}m` : `${dur}s`}
@@ -916,7 +900,7 @@ function Timer({ paletteName }) {
                 setFinished(false)
               }
             }}
-            className="w-32 bg-[#1a1917] border border-amber-900/40 rounded px-3 py-2 text-amber-300 text-sm font-mono focus:outline-none focus:border-amber-700 text-center"
+            className="w-32 bg-[#0a0a1a] border border-cyan-900/40 rounded px-3 py-2 text-cyan-300 text-sm font-mono focus:outline-none focus:border-cyan-700 text-center"
           />
         </div>
       )}
@@ -933,9 +917,9 @@ function Timer({ paletteName }) {
           }}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: running ? rgbStr(lerpColor(pal.second, [40, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [20, 20, 20], 0.4)),
+            backgroundColor: running ? rgbStr(lerpColor(pal.second, [20, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [10, 10, 20], 0.4)),
             color: running ? rgbStr(pal.second) : rgbStr(pal.accent),
-            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [60, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [60, 50, 40], 0.3))}`,
+            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [40, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [30, 30, 50], 0.3))}`,
           }}
         >
           {running ? 'Pause' : finished ? 'Restart' : 'Start'}
@@ -944,9 +928,9 @@ function Timer({ paletteName }) {
           onClick={() => { setRunning(false); setRemaining(duration); setFinished(false) }}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: rgbStr(lerpColor(pal.ring, [20, 20, 20], 0.3)),
+            backgroundColor: rgbStr(lerpColor(pal.ring, [10, 10, 20], 0.3)),
             color: rgbStr(pal.tick),
-            border: `1px solid ${rgbStr(lerpColor(pal.ring, [40, 40, 40], 0.3))}`,
+            border: `1px solid ${rgbStr(lerpColor(pal.ring, [30, 30, 50], 0.3))}`,
           }}
         >
           Reset
@@ -958,13 +942,13 @@ function Timer({ paletteName }) {
 
 // --- Pomodoro Timer ---
 function Pomodoro({ paletteName }) {
-  const [phase, setPhase] = useState('work') // work, shortBreak, longBreak
+  const [phase, setPhase] = useState('work')
   const [remaining, setRemaining] = useState(25 * 60)
   const [running, setRunning] = useState(false)
   const [sessions, setSessions] = useState(0)
   const intervalRef = useRef(null)
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   const phaseDurations = {
     work: 25 * 60,
@@ -1023,9 +1007,9 @@ function Pomodoro({ paletteName }) {
               phase === key ? 'font-semibold' : ''
             }`}
             style={{
-              backgroundColor: phase === key ? rgbStr(lerpColor(pal.hands, [20, 20, 20], 0.4)) : rgbStr(lerpColor(pal.ring, [20, 20, 20], 0.3)),
+              backgroundColor: phase === key ? rgbStr(lerpColor(pal.hands, [10, 10, 20], 0.4)) : rgbStr(lerpColor(pal.ring, [10, 10, 20], 0.3)),
               color: phase === key ? rgbStr(pal.accent) : rgbStr(pal.tick),
-              border: `1px solid ${rgbStr(lerpColor(pal.ring, [40, 40, 40], 0.3))}`,
+              border: `1px solid ${rgbStr(lerpColor(pal.ring, [30, 30, 50], 0.3))}`,
             }}
           >
             {label}
@@ -1041,7 +1025,7 @@ function Pomodoro({ paletteName }) {
             cy={140}
             r={130}
             fill="none"
-            stroke={rgbStr(lerpColor(pal.ring, pal.bg, 0.5))}
+            stroke={rgbStr(lerpColor(pal.ring, pal.surface, 0.5))}
             strokeWidth={4}
           />
           <circle
@@ -1054,7 +1038,7 @@ function Pomodoro({ paletteName }) {
             strokeDasharray={`${2 * Math.PI * 130}`}
             strokeDashoffset={`${2 * Math.PI * 130 * (1 - progress)}`}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s linear' }}
+            style={{ transition: 'stroke-dashoffset 1s linear', filter: `drop-shadow(0 0 6px ${rgbStr(pal.glow)})` }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -1065,7 +1049,7 @@ function Pomodoro({ paletteName }) {
               fontSize: '0.9rem',
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}
           >
             {phaseLabels[phase]}
@@ -1075,6 +1059,7 @@ function Pomodoro({ paletteName }) {
             style={{
               fontSize: '3.5rem',
               color: rgbStr(pal.hands),
+              textShadow: `0 0 15px ${rgbStr(pal.glow)}66`,
             }}
           >
             {formatTime(remaining)}
@@ -1085,7 +1070,7 @@ function Pomodoro({ paletteName }) {
       {/* Sessions */}
       <p
         className="mb-6 text-sm"
-        style={{ color: rgbStr(pal.tick), fontFamily: 'Georgia, serif' }}
+        style={{ color: rgbStr(pal.tick), fontFamily: 'system-ui, -apple-system, sans-serif' }}
       >
         Sessions completed: {sessions}
       </p>
@@ -1096,9 +1081,9 @@ function Pomodoro({ paletteName }) {
           onClick={() => setRunning(!running)}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: running ? rgbStr(lerpColor(pal.second, [40, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [20, 20, 20], 0.4)),
+            backgroundColor: running ? rgbStr(lerpColor(pal.second, [20, 10, 10], 0.3)) : rgbStr(lerpColor(pal.hands, [10, 10, 20], 0.4)),
             color: running ? rgbStr(pal.second) : rgbStr(pal.accent),
-            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [60, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [60, 50, 40], 0.3))}`,
+            border: `1px solid ${running ? rgbStr(lerpColor(pal.second, [40, 20, 10], 0.3)) : rgbStr(lerpColor(pal.accent, [30, 30, 50], 0.3))}`,
           }}
         >
           {running ? 'Pause' : 'Start'}
@@ -1111,9 +1096,9 @@ function Pomodoro({ paletteName }) {
           }}
           className="px-8 py-3 rounded-lg text-sm tracking-wider uppercase transition-colors"
           style={{
-            backgroundColor: rgbStr(lerpColor(pal.ring, [20, 20, 20], 0.3)),
+            backgroundColor: rgbStr(lerpColor(pal.ring, [10, 10, 20], 0.3)),
             color: rgbStr(pal.tick),
-            border: `1px solid ${rgbStr(lerpColor(pal.ring, [40, 40, 40], 0.3))}`,
+            border: `1px solid ${rgbStr(lerpColor(pal.ring, [30, 30, 50], 0.3))}`,
           }}
         >
           Reset
@@ -1126,11 +1111,12 @@ function Pomodoro({ paletteName }) {
 // --- Main Clock Component ---
 function Clock() {
   const [mode, setMode] = useState('analog')
-  const [paletteName, setPaletteName] = useState('Amber Glow')
+  const [paletteName, setPaletteName] = useState('Deep Space')
   const [showSeconds, setShowSeconds] = useState(true)
   const [showNumbers, setShowNumbers] = useState(true)
+  const [use24Hour, setUse24Hour] = useState(false)
 
-  const pal = palettes[paletteName] || palettes['Amber Glow']
+  const pal = palettes[paletteName] || palettes['Deep Space']
 
   const modes = [
     { id: 'analog', name: 'Analog' },
@@ -1142,19 +1128,19 @@ function Clock() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0f0e0c] text-amber-50 flex flex-col">
+    <div className="min-h-screen bg-[#080c18] text-cyan-50 flex flex-col">
       {/* Header */}
-      <header className="border-b border-amber-900/30 px-6 py-4">
+      <header className="border-b border-cyan-900/30 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <a href="/" className="text-amber-800 hover:text-amber-500 transition-colors text-xs tracking-widest uppercase font-mono">
+            <a href="/" className="text-cyan-700 hover:text-cyan-400 transition-colors text-xs tracking-widest uppercase font-mono">
               ← Back to Launcher
             </a>
-            <div className="h-6 w-px bg-amber-900/40"></div>
-            <h1 className="text-2xl font-light tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+            <div className="h-6 w-px bg-cyan-900/40"></div>
+            <h1 className="text-2xl font-light tracking-tight" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
               Chronos
             </h1>
-            <p className="text-amber-700 text-xs">Time & Timing</p>
+            <p className="text-cyan-700 text-xs">Time & Timing</p>
           </div>
 
           {/* Palette selector */}
@@ -1164,9 +1150,9 @@ function Clock() {
                 key={name}
                 onClick={() => setPaletteName(name)}
                 className={`w-6 h-6 rounded-full border-2 transition-all ${
-                  paletteName === name ? 'border-amber-400 scale-110' : 'border-transparent hover:border-amber-700/50'
+                  paletteName === name ? 'border-cyan-400 scale-110' : 'border-transparent hover:border-cyan-700/50'
                 }`}
-                style={{ backgroundColor: colors.hands.join(',') }}
+                style={{ backgroundColor: `rgb(${colors.hands.join(',')})` }}
                 title={name}
               />
             ))}
@@ -1175,7 +1161,7 @@ function Clock() {
       </header>
 
       {/* Mode tabs */}
-      <div className="border-b border-amber-900/20">
+      <div className="border-b border-cyan-900/20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-1">
             {modes.map(m => (
@@ -1184,8 +1170,8 @@ function Clock() {
                 onClick={() => setMode(m.id)}
                 className={`px-4 py-3 text-xs tracking-wider uppercase transition-colors border-b-2 ${
                   mode === m.id
-                    ? 'border-amber-500 text-amber-300'
-                    : 'border-transparent text-amber-700 hover:text-amber-500'
+                    ? 'border-cyan-400 text-cyan-300'
+                    : 'border-transparent text-cyan-700 hover:text-cyan-500'
                 }`}
               >
                 {m.name}
@@ -1211,7 +1197,7 @@ function Clock() {
                 <button
                   onClick={() => setShowSeconds(!showSeconds)}
                   className={`px-4 py-2 rounded-lg text-xs tracking-wider uppercase transition-colors ${
-                    showSeconds ? 'bg-amber-900/40 text-amber-300' : 'text-amber-700 hover:text-amber-500'
+                    showSeconds ? 'bg-cyan-900/40 text-cyan-300' : 'text-cyan-700 hover:text-cyan-500'
                   }`}
                 >
                   Seconds
@@ -1219,7 +1205,7 @@ function Clock() {
                 <button
                   onClick={() => setShowNumbers(!showNumbers)}
                   className={`px-4 py-2 rounded-lg text-xs tracking-wider uppercase transition-colors ${
-                    showNumbers ? 'bg-amber-900/40 text-amber-300' : 'text-amber-700 hover:text-amber-500'
+                    showNumbers ? 'bg-cyan-900/40 text-cyan-300' : 'text-cyan-700 hover:text-cyan-500'
                   }`}
                 >
                   Numbers
@@ -1229,11 +1215,35 @@ function Clock() {
           )}
 
           {mode === 'digital' && (
-            <DigitalClock paletteName={paletteName} size={500} />
+            <div className="flex flex-col items-center">
+              <DigitalClock paletteName={paletteName} use24Hour={use24Hour} />
+              <div className="flex gap-4 mt-8">
+                <button
+                  onClick={() => setUse24Hour(!use24Hour)}
+                  className={`px-4 py-2 rounded-lg text-xs tracking-wider uppercase transition-colors ${
+                    use24Hour ? 'bg-cyan-900/40 text-cyan-300' : 'text-cyan-700 hover:text-cyan-500'
+                  }`}
+                >
+                  {use24Hour ? '24H' : '12H'}
+                </button>
+              </div>
+            </div>
           )}
 
           {mode === 'world' && (
-            <WorldClock paletteName={paletteName} size={500} />
+            <div className="flex flex-col items-center">
+              <WorldClock paletteName={paletteName} use24Hour={use24Hour} />
+              <div className="flex gap-4 mt-8">
+                <button
+                  onClick={() => setUse24Hour(!use24Hour)}
+                  className={`px-4 py-2 rounded-lg text-xs tracking-wider uppercase transition-colors ${
+                    use24Hour ? 'bg-cyan-900/40 text-cyan-300' : 'text-cyan-700 hover:text-cyan-500'
+                  }`}
+                >
+                  {use24Hour ? '24H' : '12H'}
+                </button>
+              </div>
+            </div>
           )}
 
           {mode === 'stopwatch' && (
