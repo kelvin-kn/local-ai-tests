@@ -50,44 +50,81 @@ const palettes = {
   'Monochrome': ['#0a0a0a', '#2a2a2a', '#4a4a4a', '#6a6a6a', '#8a8a8a', '#aaaaaa'],
 }
 
-const asciiChars = {
+// Dense ASCII character set: dark (dense) to light (sparse)
+const asciiCharSets = {
   dense: '@%#*+=-:. ',
   medium: 'WMAO#*+csil;:.',
   light: '.:-=+*#%@',
   minimal: ' .:;+=*#%@',
 }
 
+// --- Image to color extraction ---
+function extractColorsFromImage(img, numColors = 6) {
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = 100
+  tempCanvas.height = 100
+  const tempCtx = tempCanvas.getContext('2d')
+  tempCtx.drawImage(img, 0, 0, 100, 100)
+  const imageData = tempCtx.getImageData(0, 0, 100, 100)
+  const data = imageData.data
+
+  // Sample pixels and quantize colors
+  const colorMap = {}
+  for (let i = 0; i < data.length; i += 16) {
+    const r = Math.floor(data[i] / 32) * 32
+    const g = Math.floor(data[i + 1] / 32) * 32
+    const b = Math.floor(data[i + 2] / 32) * 32
+    const key = `${r},${g},${b}`
+    colorMap[key] = (colorMap[key] || 0) + 1
+  }
+
+  const sorted = Object.entries(colorMap).sort((a, b) => b[1] - a[1])
+  const colors = []
+  for (const [key] of sorted) {
+    if (colors.length >= numColors) break
+    const [r, g, b] = key.split(',').map(Number)
+    const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+    colors.push(hex)
+  }
+
+  // Ensure background color (darkest)
+  if (colors.length < numColors) {
+    colors.push('#0a0a0a')
+  }
+  return colors
+}
+
 // --- Art generation algorithms ---
-function generateFlowField(canvas, seed, palette) {
+function generateFlowField(canvas, seed, palette, imageData = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   const rng = seededRandom(seed)
-  
+
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
-  
+
   const numParticles = 3000
   const stepSize = 2
-  
+
   for (let p = 0; p < numParticles; p++) {
     let x = rng() * w
     let y = rng() * h
     const colorIdx = Math.floor(rng() * (palette.length - 1)) + 1
-    
+
     ctx.beginPath()
     ctx.moveTo(x, y)
     ctx.strokeStyle = palette[colorIdx]
     ctx.lineWidth = 1
     ctx.globalAlpha = 0.3 + rng() * 0.4
-    
+
     for (let i = 0; i < 200; i++) {
       const angle = fbm(x * 0.005, y * 0.005, seed) * Math.PI * 4
       x += Math.cos(angle) * stepSize
       y += Math.sin(angle) * stepSize
-      
+
       if (x < 0 || x > w || y < 0 || y > h) break
-      
+
       ctx.lineTo(x, y)
       ctx.stroke()
       ctx.beginPath()
@@ -97,18 +134,18 @@ function generateFlowField(canvas, seed, palette) {
   ctx.globalAlpha = 1
 }
 
-function generateVoronoi(canvas, seed, palette) {
+function generateVoronoi(canvas, seed, palette, imageData = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   const rng = seededRandom(seed)
-  
+
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
-  
+
   const numPoints = 30
   const points = []
-  
+
   for (let i = 0; i < numPoints; i++) {
     points.push({
       x: rng() * w,
@@ -116,16 +153,16 @@ function generateVoronoi(canvas, seed, palette) {
       color: palette[Math.floor(rng() * (palette.length - 1)) + 1],
     })
   }
-  
-  const imageData = ctx.getImageData(0, 0, w, h)
-  const data = imageData.data
-  
+
+  const imageData2 = ctx.getImageData(0, 0, w, h)
+  const data = imageData2.data
+
   for (let y = 0; y < h; y += 2) {
     for (let x = 0; x < w; x += 2) {
       let minDist = Infinity
       let secondMin = Infinity
       let closestColor = palette[1]
-      
+
       for (const point of points) {
         const dist = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2)
         if (dist < minDist) {
@@ -136,12 +173,12 @@ function generateVoronoi(canvas, seed, palette) {
           secondMin = dist
         }
       }
-      
+
       const edge = Math.abs(minDist - secondMin) < 2 ? 0.15 : 1
       const r = parseInt(closestColor.slice(1, 3), 16)
       const g = parseInt(closestColor.slice(3, 5), 16)
       const b = parseInt(closestColor.slice(5, 7), 16)
-      
+
       for (let dy = 0; dy < 2 && y + dy < h; dy++) {
         for (let dx = 0; dx < 2 && x + dx < w; dx++) {
           const idx = ((y + dy) * w + (x + dx)) * 4
@@ -153,30 +190,30 @@ function generateVoronoi(canvas, seed, palette) {
       }
     }
   }
-  
-  ctx.putImageData(imageData, 0, 0)
+
+  ctx.putImageData(imageData2, 0, 0)
 }
 
-function generateGeometric(canvas, seed, palette) {
+function generateGeometric(canvas, seed, palette, imageData = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   const rng = seededRandom(seed)
-  
+
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
-  
+
   const numShapes = 50
   const cx = w / 2
   const cy = h / 2
-  
+
   for (let i = 0; i < numShapes; i++) {
     const angle = (i / numShapes) * Math.PI * 2 + rng() * 0.5
     const radius = 50 + rng() * Math.min(w, h) * 0.4
     const x = cx + Math.cos(angle) * radius
     const y = cy + Math.sin(angle) * radius
     const size = 20 + rng() * 80
-    
+
     ctx.beginPath()
     const sides = Math.floor(3 + rng() * 4)
     for (let s = 0; s <= sides; s++) {
@@ -187,7 +224,7 @@ function generateGeometric(canvas, seed, palette) {
       else ctx.lineTo(sx, sy)
     }
     ctx.closePath()
-    
+
     const colorIdx = Math.floor(rng() * (palette.length - 1)) + 1
     ctx.fillStyle = palette[colorIdx] + '60'
     ctx.strokeStyle = palette[colorIdx]
@@ -197,7 +234,7 @@ function generateGeometric(canvas, seed, palette) {
   }
 }
 
-function generateCellular(canvas, seed, palette) {
+function generateCellular(canvas, seed, palette, imageData = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
@@ -205,21 +242,21 @@ function generateCellular(canvas, seed, palette) {
   const cols = Math.floor(w / cellSize)
   const rows = Math.floor(h / cellSize)
   const rng = seededRandom(seed)
-  
+
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
-  
+
   let grid = Array(rows).fill(null).map(() => Array(cols).fill(0))
-  
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       grid[y][x] = rng() > 0.5 ? 1 : 0
     }
   }
-  
+
   for (let step = 0; step < 50; step++) {
     const newGrid = Array(rows).fill(null).map(() => Array(cols).fill(0))
-    
+
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         let neighbors = 0
@@ -231,7 +268,7 @@ function generateCellular(canvas, seed, palette) {
             neighbors += grid[ny][nx]
           }
         }
-        
+
         if (grid[y][x] === 1) {
           newGrid[y][x] = neighbors === 2 || neighbors === 3 ? 1 : 0
         } else {
@@ -239,10 +276,10 @@ function generateCellular(canvas, seed, palette) {
         }
       }
     }
-    
+
     grid = newGrid
   }
-  
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       if (grid[y][x]) {
@@ -254,18 +291,18 @@ function generateCellular(canvas, seed, palette) {
   }
 }
 
-function generateWaveInterference(canvas, seed, palette) {
+function generateWaveInterference(canvas, seed, palette, imageData = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
   const rng = seededRandom(seed)
-  
+
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
-  
+
   const numSources = 8
   const sources = []
-  
+
   for (let i = 0; i < numSources; i++) {
     sources.push({
       x: rng() * w,
@@ -275,27 +312,27 @@ function generateWaveInterference(canvas, seed, palette) {
       color: palette[Math.floor(rng() * (palette.length - 1)) + 1],
     })
   }
-  
-  const imageData = ctx.getImageData(0, 0, w, h)
-  const data = imageData.data
-  
+
+  const imageData3 = ctx.getImageData(0, 0, w, h)
+  const data = imageData3.data
+
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       let value = 0
-      
+
       for (const source of sources) {
         const dist = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
         value += Math.sin(dist * source.frequency - source.phase)
       }
-      
+
       const normalized = (value / numSources + 1) / 2
       const colorIdx = Math.floor(normalized * (palette.length - 1)) + 1
       const color = palette[Math.min(colorIdx, palette.length - 1)]
-      
+
       const r = parseInt(color.slice(1, 3), 16)
       const g = parseInt(color.slice(3, 5), 16)
       const b = parseInt(color.slice(5, 7), 16)
-      
+
       const idx = (y * w + x) * 4
       data[idx] = r
       data[idx + 1] = g
@@ -303,57 +340,82 @@ function generateWaveInterference(canvas, seed, palette) {
       data[idx + 3] = 255
     }
   }
-  
-  ctx.putImageData(imageData, 0, 0)
+
+  ctx.putImageData(imageData3, 0, 0)
 }
 
 function generateAsciiArt(canvas, seed, palette, sourceImage = null) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
-  
-  let imgData
+
+  // Use proper ASCII art dimensions (character cell aspect ratio)
+  const charWidth = 6
+  const charHeight = 10
+  const cols = Math.floor(w / charWidth)
+  const rows = Math.floor(h / charHeight)
+
+  let brightnessMap = []
+
   if (sourceImage) {
+    // Sample from uploaded image
     const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = w
-    tempCanvas.height = h
+    tempCanvas.width = cols
+    tempCanvas.height = rows
     const tempCtx = tempCanvas.getContext('2d')
-    tempCtx.drawImage(sourceImage, 0, 0, w, h)
-    imgData = tempCtx.getImageData(0, 0, w, h)
+    tempCtx.drawImage(sourceImage, 0, 0, cols, rows)
+    const imgData = tempCtx.getImageData(0, 0, cols, rows)
+    const data = imgData.data
+
+    for (let i = 0; i < rows; i++) {
+      brightnessMap[i] = []
+      for (let j = 0; j < cols; j++) {
+        const idx = (i * cols + j) * 4
+        const r = data[idx]
+        const g = data[idx + 1]
+        const b = data[idx + 2]
+        // Perceived brightness
+        brightnessMap[i][j] = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+      }
+    }
   } else {
+    // Generate from seed
     const rng = seededRandom(seed)
-    imgData = ctx.createImageData(w, h)
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      const gray = Math.floor(rng() * 255)
-      imgData.data[i] = gray
-      imgData.data[i + 1] = gray
-      imgData.data[i + 2] = gray
-      imgData.data[i + 3] = 255
+    for (let i = 0; i < rows; i++) {
+      brightnessMap[i] = []
+      for (let j = 0; j < cols; j++) {
+        brightnessMap[i][j] = rng()
+      }
     }
   }
-  
-  const chars = asciiChars.dense
-  const fontSize = 10
+
+  // Use dense character set
+  const chars = asciiCharSets.dense
+
+  // Clear canvas
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
+
+  // Use monospace font sized to character cell height
+  const fontSize = Math.max(8, Math.min(14, charHeight - 2))
   ctx.font = `${fontSize}px monospace`
   ctx.textAlign = 'center'
-  
-  const step = 2
-  for (let y = 0; y < h; y += step) {
-    for (let x = 0; x < w; x += step) {
-      const idx = (y * w + x) * 4
-      const r = imgData.data[idx]
-      const g = imgData.data[idx + 1]
-      const b = imgData.data[idx + 2]
-      const brightness = (r + g + b) / (3 * 255)
-      
-      const charIdx = Math.floor(brightness * (chars.length - 1))
+  ctx.textBaseline = 'middle'
+
+  // Render characters
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const brightness = brightnessMap[i][j]
+      // Map brightness to character (dark = dense chars, light = sparse)
+      const charIdx = Math.floor((1 - brightness) * (chars.length - 1))
       const char = chars[charIdx]
-      
+
+      // Color based on brightness and palette
       const colorIdx = Math.floor(brightness * (palette.length - 1)) + 1
-      ctx.fillStyle = palette[Math.min(colorIdx, palette.length - 1)]
-      ctx.fillText(char, x + step / 2, y + fontSize)
+      const clampedIdx = Math.min(Math.max(colorIdx, 1), palette.length - 1)
+      ctx.fillStyle = palette[clampedIdx]
+
+      ctx.fillText(char, j * charWidth + charWidth / 2, i * charHeight + charHeight / 2)
     }
   }
 }
@@ -376,9 +438,10 @@ function ArtGallery() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('flow')
   const [isGenerating, setIsGenerating] = useState(false)
   const [uploadedImage, setUploadedImage] = useState(null)
+  const [customPalette, setCustomPalette] = useState(null)
   const canvasRef = useRef(null)
   const fileInputRef = useRef(null)
-  
+
   const algorithms = [
     { id: 'flow', name: 'Flow Fields' },
     { id: 'voronoi', name: 'Voronoi' },
@@ -387,15 +450,9 @@ function ArtGallery() {
     { id: 'wave', name: 'Wave Interference' },
     { id: 'ascii', name: 'ASCII Art' },
   ]
-  
-  const uploadedImageRef = useRef(uploadedImage)
-  
-  useEffect(() => {
-    uploadedImageRef.current = uploadedImage
-  }, [uploadedImage])
-  
+
   const collectionRef = useRef(collection)
-  
+
   useEffect(() => {
     collectionRef.current = collection
     try {
@@ -404,45 +461,66 @@ function ArtGallery() {
       console.error('Failed to save collection to localStorage:', e)
     }
   }, [collection])
-  
-  const generateArt = useCallback(() => {
+
+  // Live regeneration when algorithm, palette, or seed changes
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    
-    setIsGenerating(true)
-    
-    setTimeout(() => {
-      const palette = palettes[selectedPalette]
-      
-      switch (selectedAlgorithm) {
-        case 'flow':
-          generateFlowField(canvas, currentSeed, palette)
-          break
-        case 'voronoi':
-          generateVoronoi(canvas, currentSeed, palette)
-          break
-        case 'geometric':
-          generateGeometric(canvas, currentSeed, palette)
-          break
-        case 'cellular':
-          generateCellular(canvas, currentSeed, palette)
-          break
-        case 'wave':
-          generateWaveInterference(canvas, currentSeed, palette)
-          break
-        case 'ascii':
-          generateAsciiArt(canvas, currentSeed, palette, uploadedImageRef.current)
-          break
+
+    const palette = customPalette || palettes[selectedPalette]
+
+    switch (selectedAlgorithm) {
+      case 'flow':
+        generateFlowField(canvas, currentSeed, palette, uploadedImage)
+        break
+      case 'voronoi':
+        generateVoronoi(canvas, currentSeed, palette, uploadedImage)
+        break
+      case 'geometric':
+        generateGeometric(canvas, currentSeed, palette, uploadedImage)
+        break
+      case 'cellular':
+        generateCellular(canvas, currentSeed, palette, uploadedImage)
+        break
+      case 'wave':
+        generateWaveInterference(canvas, currentSeed, palette, uploadedImage)
+        break
+      case 'ascii':
+        generateAsciiArt(canvas, currentSeed, palette, uploadedImage)
+        break
+    }
+  }, [currentSeed, selectedPalette, selectedAlgorithm, uploadedImage, customPalette])
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        setUploadedImage(img)
+        // Extract colors from image for use with all algorithms
+        const colors = extractColorsFromImage(img, 6)
+        setCustomPalette(colors)
       }
-      
-      setIsGenerating(false)
-    }, 50)
-  }, [currentSeed, selectedPalette, selectedAlgorithm])
-  
+      img.src = event.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const clearUpload = () => {
+    setUploadedImage(null)
+    setCustomPalette(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const saveToCollection = () => {
     const canvas = canvasRef.current
     if (!canvas) return
-    
+
     const dataUrl = canvas.toDataURL('image/png')
     const newArt = {
       id: Date.now(),
@@ -452,21 +530,21 @@ function ArtGallery() {
       image: dataUrl,
       createdAt: new Date().toISOString(),
     }
-    
+
     setCollection(prev => [newArt, ...prev])
   }
-  
+
   const downloadArt = (art) => {
     const link = document.createElement('a')
     link.download = `artisan-${art.id}.png`
     link.href = art.image
     link.click()
   }
-  
+
   const removeArt = (id) => {
     setCollection(prev => prev.filter(a => a.id !== id))
   }
-  
+
   const loadArt = (art) => {
     setSelectedArt(art)
     setCurrentSeed(art.seed)
@@ -474,29 +552,7 @@ function ArtGallery() {
     setSelectedAlgorithm(art.algorithm)
     setMode('studio')
   }
-  
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const img = new Image()
-      img.onload = () => {
-        setUploadedImage(img)
-      }
-      img.src = event.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-  
-  const clearUpload = () => {
-    setUploadedImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-  
+
   return (
     <div className="min-h-screen bg-[#0f0e0c] text-amber-50 flex flex-col">
       {/* Header */}
@@ -512,7 +568,7 @@ function ArtGallery() {
             </h1>
             <p className="text-amber-700 text-xs">Generative Art Studio</p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMode('gallery')}
@@ -533,7 +589,7 @@ function ArtGallery() {
           </div>
         </div>
       </header>
-      
+
       {/* Gallery Mode */}
       {mode === 'gallery' && (
         <div className="flex-1 px-6 py-12">
@@ -546,7 +602,7 @@ function ArtGallery() {
                 {collection.length} {collection.length === 1 ? 'piece' : 'pieces'} generated
               </p>
             </div>
-            
+
             {collection.length === 0 ? (
               <div className="text-center py-32">
                 <p className="text-amber-800 text-lg mb-4" style={{ fontFamily: 'Georgia, serif' }}>
@@ -603,7 +659,7 @@ function ArtGallery() {
           </div>
         </div>
       )}
-      
+
       {/* Studio Mode */}
       {mode === 'studio' && (
         <div className="flex-1 flex flex-col lg:flex-row">
@@ -612,7 +668,7 @@ function ArtGallery() {
             <h2 className="text-xl font-light text-amber-100 mb-6" style={{ fontFamily: 'Georgia, serif' }}>
               Controls
             </h2>
-            
+
             {/* Algorithm Selection */}
             <div className="mb-6">
               <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
@@ -634,7 +690,7 @@ function ArtGallery() {
                 ))}
               </div>
             </div>
-            
+
             {/* Palette Selection */}
             <div className="mb-6">
               <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
@@ -644,9 +700,9 @@ function ArtGallery() {
                 {Object.entries(palettes).map(([name, colors]) => (
                   <button
                     key={name}
-                    onClick={() => setSelectedPalette(name)}
+                    onClick={() => { setSelectedPalette(name); setCustomPalette(null) }}
                     className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-2 ${
-                      selectedPalette === name
+                      selectedPalette === name && !customPalette
                         ? 'bg-amber-900/40 text-amber-300'
                         : 'text-amber-700 hover:text-amber-500 hover:bg-amber-900/20'
                     }`}
@@ -664,8 +720,13 @@ function ArtGallery() {
                   </button>
                 ))}
               </div>
+              {customPalette && (
+                <p className="text-amber-600 text-xs mt-2 italic">
+                  Using extracted colors from uploaded image
+                </p>
+              )}
             </div>
-            
+
             {/* Seed */}
             <div className="mb-6">
               <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
@@ -686,40 +747,43 @@ function ArtGallery() {
                 </button>
               </div>
             </div>
-            
-            {/* Image Upload (for ASCII art) */}
-            {selectedAlgorithm === 'ascii' && (
-              <div className="mb-6">
-                <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
-                  Source Image
-                </label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="block w-full text-sm text-amber-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-amber-900/40 file:text-amber-300 hover:file:bg-amber-800/50 file:cursor-pointer"
-                />
-                {uploadedImage && (
-                  <button
-                    onClick={clearUpload}
-                    className="mt-2 text-xs text-amber-700 hover:text-amber-500 transition-colors"
-                  >
-                    Clear image
-                  </button>
-                )}
-              </div>
+
+            {/* Image Upload (for all algorithms) */}
+            <div className="mb-6">
+              <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
+                Source Image
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="block w-full text-sm text-amber-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-amber-900/40 file:text-amber-300 hover:file:bg-amber-800/50 file:cursor-pointer"
+              />
+              {uploadedImage && (
+                <button
+                  onClick={clearUpload}
+                  className="mt-2 text-xs text-amber-700 hover:text-amber-500 transition-colors"
+                >
+                  Clear image
+                </button>
+              )}
+            </div>
+
+            {/* Generate Button - only shown when image is uploaded */}
+            {uploadedImage && (
+              <button
+                onClick={() => {
+                  setIsGenerating(true)
+                  setTimeout(() => setIsGenerating(false), 100)
+                }}
+                disabled={isGenerating}
+                className="w-full py-3 bg-amber-800 hover:bg-amber-700 disabled:bg-amber-900/40 text-amber-100 rounded-lg text-sm tracking-wider uppercase transition-colors mb-4"
+              >
+                {isGenerating ? 'Generating...' : 'Re-generate'}
+              </button>
             )}
-            
-            {/* Generate Button */}
-            <button
-              onClick={generateArt}
-              disabled={isGenerating}
-              className="w-full py-3 bg-amber-800 hover:bg-amber-700 disabled:bg-amber-900/40 text-amber-100 rounded-lg text-sm tracking-wider uppercase transition-colors mb-4"
-            >
-              {isGenerating ? 'Generating...' : 'Generate'}
-            </button>
-            
+
             {/* Save Button */}
             <button
               onClick={saveToCollection}
@@ -728,7 +792,7 @@ function ArtGallery() {
               Save to Collection
             </button>
           </div>
-          
+
           {/* Canvas Display */}
           <div className="flex-1 flex items-center justify-center p-8 bg-[#0f0e0c]">
             <div className="relative">
