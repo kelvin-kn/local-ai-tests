@@ -85,10 +85,10 @@ function AnalogClock({ paletteName, size = 400, showSeconds = true, showNumbers 
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     const w = canvas.width
-    const h = canvas.height
+    const canvasH = canvas.height
     const cx = w / 2
-    const cy = h / 2
-    const radius = Math.min(w, h) / 2 - 20
+    const cy = canvasH / 2
+    const radius = Math.min(w, canvasH) / 2 - 20
 
     const pal = palettes[paletteName] || palettes['Amber Glow']
 
