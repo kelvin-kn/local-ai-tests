@@ -129,7 +129,7 @@ The projects were mostly created in **one continuous session**.
 
 ### Misc
 
-- [**qwen/qwen3.6-27b](https://lmstudio.ai/models/qwen/qwen3.6-27b) could not run on the test machine. 
+- [qwen/qwen3.6-27b](https://lmstudio.ai/models/qwen/qwen3.6-27b) could not run on the test machine. 
 
 ### Errors Encountered
 
