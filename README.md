@@ -79,9 +79,9 @@ local-ai-tests/
 |-------|------|--------|
 | `/` | Launcher | ✅ |
 | `/portfolio` | Portfolio | ✅ |
-| `/quiz` | Quiz | 🚧 |
-| `/snake` | Snake | 🚧 |
-| `/weather` | Weather | 🚧 |
+| `/quiz` | Quiz | ✅ |
+| `/snake` | Snake | ✅ |
+| `/weather` | Weather | ✅ |
 | `/art` | Art Gallery | 🚧 |
 | `/clock` | Clock | 🚧 |
 

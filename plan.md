@@ -47,7 +47,7 @@ local-ai-tests/
 3. Project 2 — Quiz ✅
 4. Project 3 — Snake ✅
 5. Project 4 — Weather ✅
-6. Project 5 — Generative Art
+6. Project 5 — Generative Art ✅
 7. Bonus — Analog Clock
 8. Launcher page ✅
 

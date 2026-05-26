@@ -5,6 +5,7 @@ import Portfolio from './pages/Portfolio'
 import Quiz from './pages/Quiz'
 import Snake from './pages/Snake'
 import Weather from './pages/Weather'
+import ArtGallery from './pages/ArtGallery'
 
 // Coming soon page for unimplemented routes
 function ComingSoon() {
@@ -54,6 +55,7 @@ function App() {
       <Route path="/quiz" element={<Quiz />} />
       <Route path="/snake" element={<Snake />} />
       <Route path="/weather" element={<Weather />} />
+      <Route path="/art" element={<ArtGallery />} />
       <Route path="*" element={<ComingSoon />} />
     </Routes>
   )
