@@ -50,6 +50,13 @@ const palettes = {
   'Monochrome': ['#0a0a0a', '#2a2a2a', '#4a4a4a', '#6a6a6a', '#8a8a8a', '#aaaaaa'],
 }
 
+const asciiChars = {
+  dense: '@%#*+=-:. ',
+  medium: 'WMAO#*+csil;:.',
+  light: '.:-=+*#%@',
+  minimal: ' .:;+=*#%@',
+}
+
 // --- Art generation algorithms ---
 function generateFlowField(canvas, seed, palette) {
   const ctx = canvas.getContext('2d')
@@ -199,17 +206,17 @@ function generateCellular(canvas, seed, palette) {
   const rows = Math.floor(h / cellSize)
   const rng = seededRandom(seed)
   
-  // Initialize grid
+  ctx.fillStyle = palette[0]
+  ctx.fillRect(0, 0, w, h)
+  
   let grid = Array(rows).fill(null).map(() => Array(cols).fill(0))
   
-  // Random initial state
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       grid[y][x] = rng() > 0.5 ? 1 : 0
     }
   }
   
-  // Evolve
   for (let step = 0; step < 50; step++) {
     const newGrid = Array(rows).fill(null).map(() => Array(cols).fill(0))
     
@@ -234,21 +241,20 @@ function generateCellular(canvas, seed, palette) {
     }
     
     grid = newGrid
-    
-    // Draw
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        if (grid[y][x]) {
-          const colorIdx = Math.floor(rng() * (palette.length - 1)) + 1
-          ctx.fillStyle = palette[colorIdx]
-          ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1)
-        }
+  }
+  
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (grid[y][x]) {
+        const colorIdx = Math.floor(rng() * (palette.length - 1)) + 1
+        ctx.fillStyle = palette[colorIdx]
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1)
       }
     }
   }
 }
 
-function generateGradientMesh(canvas, seed, palette) {
+function generateWaveInterference(canvas, seed, palette) {
   const ctx = canvas.getContext('2d')
   const w = canvas.width
   const h = canvas.height
@@ -257,14 +263,15 @@ function generateGradientMesh(canvas, seed, palette) {
   ctx.fillStyle = palette[0]
   ctx.fillRect(0, 0, w, h)
   
-  const numCircles = 20
-  const circles = []
+  const numSources = 8
+  const sources = []
   
-  for (let i = 0; i < numCircles; i++) {
-    circles.push({
+  for (let i = 0; i < numSources; i++) {
+    sources.push({
       x: rng() * w,
       y: rng() * h,
-      radius: 50 + rng() * 200,
+      frequency: 0.01 + rng() * 0.03,
+      phase: rng() * Math.PI * 2,
       color: palette[Math.floor(rng() * (palette.length - 1)) + 1],
     })
   }
@@ -274,29 +281,20 @@ function generateGradientMesh(canvas, seed, palette) {
   
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let r = 0, g = 0, b = 0
-      let totalWeight = 0
+      let value = 0
       
-      for (const circle of circles) {
-        const dist = Math.sqrt((x - circle.x) ** 2 + (y - circle.y) ** 2)
-        const weight = Math.max(0, 1 - dist / circle.radius)
-        const w2 = weight * weight
-        
-        const cr = parseInt(circle.color.slice(1, 3), 16)
-        const cg = parseInt(circle.color.slice(3, 5), 16)
-        const cb = parseInt(circle.color.slice(5, 7), 16)
-        
-        r += cr * w2
-        g += cg * w2
-        b += cb * w2
-        totalWeight += w2
+      for (const source of sources) {
+        const dist = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
+        value += Math.sin(dist * source.frequency - source.phase)
       }
       
-      if (totalWeight > 0) {
-        r = Math.min(255, Math.round(r / totalWeight))
-        g = Math.min(255, Math.round(g / totalWeight))
-        b = Math.min(255, Math.round(b / totalWeight))
-      }
+      const normalized = (value / numSources + 1) / 2
+      const colorIdx = Math.floor(normalized * (palette.length - 1)) + 1
+      const color = palette[Math.min(colorIdx, palette.length - 1)]
+      
+      const r = parseInt(color.slice(1, 3), 16)
+      const g = parseInt(color.slice(3, 5), 16)
+      const b = parseInt(color.slice(5, 7), 16)
       
       const idx = (y * w + x) * 4
       data[idx] = r
@@ -309,25 +307,103 @@ function generateGradientMesh(canvas, seed, palette) {
   ctx.putImageData(imageData, 0, 0)
 }
 
+function generateAsciiArt(canvas, seed, palette, sourceImage = null) {
+  const ctx = canvas.getContext('2d')
+  const w = canvas.width
+  const h = canvas.height
+  
+  let imgData
+  if (sourceImage) {
+    const tempCanvas = document.createElement('canvas')
+    tempCanvas.width = w
+    tempCanvas.height = h
+    const tempCtx = tempCanvas.getContext('2d')
+    tempCtx.drawImage(sourceImage, 0, 0, w, h)
+    imgData = tempCtx.getImageData(0, 0, w, h)
+  } else {
+    const rng = seededRandom(seed)
+    imgData = ctx.createImageData(w, h)
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      const gray = Math.floor(rng() * 255)
+      imgData.data[i] = gray
+      imgData.data[i + 1] = gray
+      imgData.data[i + 2] = gray
+      imgData.data[i + 3] = 255
+    }
+  }
+  
+  const chars = asciiChars.dense
+  const fontSize = 10
+  ctx.fillStyle = palette[0]
+  ctx.fillRect(0, 0, w, h)
+  ctx.font = `${fontSize}px monospace`
+  ctx.textAlign = 'center'
+  
+  const step = 2
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
+      const idx = (y * w + x) * 4
+      const r = imgData.data[idx]
+      const g = imgData.data[idx + 1]
+      const b = imgData.data[idx + 2]
+      const brightness = (r + g + b) / (3 * 255)
+      
+      const charIdx = Math.floor(brightness * (chars.length - 1))
+      const char = chars[charIdx]
+      
+      const colorIdx = Math.floor(brightness * (palette.length - 1)) + 1
+      ctx.fillStyle = palette[Math.min(colorIdx, palette.length - 1)]
+      ctx.fillText(char, x + step / 2, y + fontSize)
+    }
+  }
+}
+
 // --- Main Component ---
 function ArtGallery() {
-  const [mode, setMode] = useState('gallery') // 'gallery' or 'studio'
+  const [mode, setMode] = useState('gallery')
   const [selectedArt, setSelectedArt] = useState(null)
-  const [collection, setCollection] = useState([])
-  const [currentSeed, setCurrentSeed] = useState(Math.floor(Math.random() * 10000))
+  const [collection, setCollection] = useState(() => {
+    try {
+      const saved = localStorage.getItem('artisan-collection')
+      if (saved) return JSON.parse(saved)
+    } catch (e) {
+      console.error('Failed to load collection from localStorage:', e)
+    }
+    return []
+  })
+  const [currentSeed, setCurrentSeed] = useState(42)
   const [selectedPalette, setSelectedPalette] = useState('Amber Glow')
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('flow')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [artworks, setArtworks] = useState([])
+  const [uploadedImage, setUploadedImage] = useState(null)
   const canvasRef = useRef(null)
+  const fileInputRef = useRef(null)
   
   const algorithms = [
     { id: 'flow', name: 'Flow Fields' },
     { id: 'voronoi', name: 'Voronoi' },
     { id: 'geometric', name: 'Geometric' },
     { id: 'cellular', name: 'Cellular' },
-    { id: 'gradient', name: 'Gradient Mesh' },
+    { id: 'wave', name: 'Wave Interference' },
+    { id: 'ascii', name: 'ASCII Art' },
   ]
+  
+  const uploadedImageRef = useRef(uploadedImage)
+  
+  useEffect(() => {
+    uploadedImageRef.current = uploadedImage
+  }, [uploadedImage])
+  
+  const collectionRef = useRef(collection)
+  
+  useEffect(() => {
+    collectionRef.current = collection
+    try {
+      localStorage.setItem('artisan-collection', JSON.stringify(collection))
+    } catch (e) {
+      console.error('Failed to save collection to localStorage:', e)
+    }
+  }, [collection])
   
   const generateArt = useCallback(() => {
     const canvas = canvasRef.current
@@ -351,18 +427,17 @@ function ArtGallery() {
         case 'cellular':
           generateCellular(canvas, currentSeed, palette)
           break
-        case 'gradient':
-          generateGradientMesh(canvas, currentSeed, palette)
+        case 'wave':
+          generateWaveInterference(canvas, currentSeed, palette)
+          break
+        case 'ascii':
+          generateAsciiArt(canvas, currentSeed, palette, uploadedImageRef.current)
           break
       }
       
       setIsGenerating(false)
     }, 50)
   }, [currentSeed, selectedPalette, selectedAlgorithm])
-  
-  useEffect(() => {
-    generateArt()
-  }, [generateArt])
   
   const saveToCollection = () => {
     const canvas = canvasRef.current
@@ -400,6 +475,28 @@ function ArtGallery() {
     setMode('studio')
   }
   
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        setUploadedImage(img)
+      }
+      img.src = event.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+  
+  const clearUpload = () => {
+    setUploadedImage(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+  
   return (
     <div className="min-h-screen bg-[#0f0e0c] text-amber-50 flex flex-col">
       {/* Header */}
@@ -423,7 +520,7 @@ function ArtGallery() {
                 mode === 'gallery' ? 'bg-amber-900/40 text-amber-300' : 'text-amber-700 hover:text-amber-500'
               }`}
             >
-              Gallery
+              Gallery ({collection.length})
             </button>
             <button
               onClick={() => setMode('studio')}
@@ -589,6 +686,30 @@ function ArtGallery() {
                 </button>
               </div>
             </div>
+            
+            {/* Image Upload (for ASCII art) */}
+            {selectedAlgorithm === 'ascii' && (
+              <div className="mb-6">
+                <label className="text-amber-700 text-xs uppercase tracking-wider mb-3 block">
+                  Source Image
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="block w-full text-sm text-amber-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-amber-900/40 file:text-amber-300 hover:file:bg-amber-800/50 file:cursor-pointer"
+                />
+                {uploadedImage && (
+                  <button
+                    onClick={clearUpload}
+                    className="mt-2 text-xs text-amber-700 hover:text-amber-500 transition-colors"
+                  >
+                    Clear image
+                  </button>
+                )}
+              </div>
+            )}
             
             {/* Generate Button */}
             <button
